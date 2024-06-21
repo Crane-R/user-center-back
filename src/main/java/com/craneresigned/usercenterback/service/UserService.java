@@ -10,6 +10,20 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserService extends IService<User> {
 
+    /**
+     * 注册功能，注册成功后返回该用户的ID
+     *
+     * @Author Crane Resigned
+     * @Date 2024/6/21 22:34:39
+     */
     Long userRegister(String username, String nickName, String password, String checkPassword);
+
+    /**
+     * 登录功能，返回的user是脱敏后的user
+     *
+     * @Author Crane Resigned
+     * @Date 2024/6/21 22:43:12
+     */
+    User userLogin(String username, String password);
 
 }

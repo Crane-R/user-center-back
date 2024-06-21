@@ -10,3 +10,9 @@ spring:
     name: user-center-back
 server:
   port: 8080
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: isDelete
+      logic-delete-value: 1
+      logic-not-delete-value: 0

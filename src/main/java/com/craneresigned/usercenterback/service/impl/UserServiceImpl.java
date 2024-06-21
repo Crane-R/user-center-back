@@ -56,6 +56,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return user.getId();
     }
 
+    @Override
+    public User userLogin(String username, String password) {
+        return null;
+    }
+
     /**
      * 随机生成昵称
      * TODO：后面完善
@@ -65,6 +70,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     private String randomNickName() {
         return UUID.randomUUID().toString();
+    }
+
+    /**
+     * 用户脱敏
+     *
+     * @Author Crane Resigned
+     * @Date 2024/6/21 22:44:08
+     */
+    private User getSafeUser(User user) {
+        if (user == null) {
+            return null;
+        }
+        User safeUser = new User();
+        safeUser.setId(user.getId());
+        safeUser.setUsername(user.getUsername());
+        safeUser.setNickName(user.getNickName());
+        safeUser.setAvatarUrl(user.getAvatarUrl());
+        safeUser.setGender(user.getGender());
+        safeUser.setUserStatus(user.getUserStatus());
+        safeUser.setCreateTime(user.getCreateTime());
+        safeUser.setUpdateTime(user.getUpdateTime());
+        return safeUser;
     }
 }
 
