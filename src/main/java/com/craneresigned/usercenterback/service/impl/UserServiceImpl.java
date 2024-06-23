@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private UserMapper userMapper;
+
+    /**
+     * 用户登录态常量
+     *
+     * @Author Crane Resigned
+     * @Date 2024/6/23 17:37:46
+     */
+    private final String USER_LOGIN_STATUS = "USER_LOGIN_STATUS";
 
     @Override
     public Long userRegister(String username, String nickName, String password, String checkPassword) {
@@ -57,8 +66,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public User userLogin(String username, String password) {
-        return null;
+    public User userLogin(String username, String password, HttpServletRequest request) {
+        if (StringUtils.isAnyBlank(username, password)) {
+            return null;
+        }
+        //校验是否含有特殊字符
+        String regEx = "\\pP|\\pS|\\s+";
+        if (username.matches(regEx)) {
+            return null;
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username", username);
+        queryWrapper.eq("user_password", DigestUtils.md5DigestAsHex(password.getBytes()));
+        User user = userMapper.selectOne(queryWrapper);
+        if (user == null) {
+            return null;
+        }
+        User safeUser = getSafeUser(user);
+        request.getSession().setAttribute(USER_LOGIN_STATUS, safeUser);
+        return safeUser;
     }
 
     /**
@@ -76,7 +102,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 用户脱敏
      *
      * @Author Crane Resigned
-     * @Date 2024/6/21 22:44:08
+     * @Date 2024/6/21 22:46:39
      */
     private User getSafeUser(User user) {
         if (user == null) {

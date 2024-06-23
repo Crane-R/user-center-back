@@ -3,6 +3,8 @@ package com.craneresigned.usercenterback.service;
 import com.craneresigned.usercenterback.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author CraneResigned
  * @description 针对表【user】的数据库操作Service
@@ -24,6 +26,6 @@ public interface UserService extends IService<User> {
      * @Author Crane Resigned
      * @Date 2024/6/21 22:43:12
      */
-    User userLogin(String username, String password);
+    User userLogin(String username, String password, HttpServletRequest request);
 
 }

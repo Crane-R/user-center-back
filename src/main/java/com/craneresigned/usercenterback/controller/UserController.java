@@ -1,10 +1,14 @@
 package com.craneresigned.usercenterback.controller;
 
+import com.craneresigned.usercenterback.model.domain.User;
+import com.craneresigned.usercenterback.model.request.UserLoginRequest;
 import com.craneresigned.usercenterback.model.request.UserRegisterRequest;
 import com.craneresigned.usercenterback.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 用户控制层
@@ -20,7 +24,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/test")
-    public String test(){
+    public String test() {
         return "Hello World";
     }
 
@@ -33,6 +37,16 @@ public class UserController {
             return null;
         }
         return userService.userRegister(username, userRegisterRequest.getNickName(), password, checkPassword);
+    }
+
+    @PostMapping("/login")
+    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        String username = userLoginRequest.getUsername();
+        String password = userLoginRequest.getPassword();
+        if (StringUtils.isAnyBlank(username, password)) {
+            return null;
+        }
+        return userService.userLogin(username, password, request);
     }
 
 }
