@@ -122,6 +122,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.error("用户未登录");
             return null;
         }
+
         if (!Objects.equals(user.getUserStatus(), MANAGER_STATUS)) {
             //TODO: 这里先返回null，后期搭建前端后统一配置返回体
             log.warn("该用户未具有管理员权限");
