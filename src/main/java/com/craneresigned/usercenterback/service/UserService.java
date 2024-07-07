@@ -4,6 +4,7 @@ import com.craneresigned.usercenterback.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author CraneResigned
@@ -28,4 +29,12 @@ public interface UserService extends IService<User> {
      */
     User userLogin(String username, String password, HttpServletRequest request);
 
+    /**
+     * 这是一个管理员功能，调用此方法时需要用户鉴权
+     * 用户查询，根据用户名查询用户
+     *
+     * @Author CraneResigned
+     * @Date 2024/6/23 18:30:40
+     */
+    List<User> userQuery(String username, HttpServletRequest request);
 }
