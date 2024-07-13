@@ -14,9 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.crane.usercenterback.constant.UserConstant.MANAGER_STATUS;
+import static com.crane.usercenterback.constant.UserConstant.USER_LOGIN_STATUS;
 
 /**
  * @author CraneResigned
@@ -30,21 +34,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private UserMapper userMapper;
 
-    /**
-     * 用户登录态常量
-     *
-     * @Author Crane Resigned
-     * @Date 2024/6/23 17:37:46
-     */
-    private final String USER_LOGIN_STATUS = "USER_LOGIN_STATUS";
-
-    /**
-     * 管理员状态码，如果在数据库中用户是status字段值是1，则该用户是管理员
-     *
-     * @Author CraneResigned
-     * @Date 2024/6/23 18:37:05
-     */
-    private final Integer MANAGER_STATUS = 1;
 
     /**
      * TODO：用户名应该是英文名才对，现在中文是允许通过的
@@ -53,25 +42,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @Date 2024/7/7 11:14:40
      */
     @Override
-    public GeneralResponse<Long> userRegister(String username, String nickName, String password, String checkPassword) {
+    public Long userRegister(String username, String nickName, String password, String checkPassword) {
         //判空处理
         if (StringUtils.isAnyBlank(username, password, checkPassword)) {
-            return R.fails("用户名、密码、确认密码都不能为空");
+            log.error("用户名、密码、确认密码都不能为空");
+            return -1L;
         }
         //密码不一致
         if (!password.equals(checkPassword)) {
-            return R.fails("密码与确认密码不一致");
+            log.error("密码与确认密码不一致");
+            return -1L;
         }
         //校验是否含有特殊字符
         String regEx = "\\pP|\\pS|\\s+";
         if (username.matches(regEx)) {
-            return R.fails("用户名不能含有特殊字符");
+            log.error("用户名不能含有特殊字符");
+            return -1L;
         }
         //账户名不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         if (userMapper.selectCount(queryWrapper) > 0) {
-            return R.fails("用户名重复，请重新输入");
+            log.error("用户名重复，请重新输入");
+            return -1L;
         }
         User user = new User();
         user.setUsername(username);
@@ -80,33 +73,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
         boolean save = this.save(user);
         if (!save) {
-            return R.fails("注册失败");
+            return -1L;
         }
         log.info("注册成功");
-        return R.ok("注册成功", user.getId());
+        return user.getId();
     }
 
     @Override
-    public GeneralResponse<User> userLogin(String username, String password, HttpServletRequest request) {
+    public User userLogin(String username, String password, HttpServletRequest request) {
         if (StringUtils.isAnyBlank(username, password)) {
             return null;
         }
         //校验是否含有特殊字符
         String regEx = "\\pP|\\pS|\\s+";
         if (username.matches(regEx)) {
-            return R.fails("用户名含有特殊字符");
+            log.error("用户名含有特殊字符");
+            return null;
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         queryWrapper.eq("user_password", DigestUtils.md5DigestAsHex(password.getBytes()));
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
-            return R.fails("用户名不存在");
+            log.error("用户名不存在");
+            return null;
         }
         User safeUser = getSafeUser(user);
         request.getSession().setAttribute(USER_LOGIN_STATUS, safeUser);
         log.info("登录成功");
-        return R.ok("登录成功", safeUser);
+        return safeUser;
     }
 
     /**
@@ -117,22 +112,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @Date 2024/7/7 10:57:42
      */
     @Override
-    public GeneralResponse<List<User>> userQuery(String username, HttpServletRequest request) {
+    public List<User> userQuery(String username, HttpServletRequest request) {
         //用户鉴权
         User user = (User) request.getSession().getAttribute(USER_LOGIN_STATUS);
         if (user == null) {
             //这里要提示未登录，同下TODO
             log.error("用户未登录");
-            return R.fails("用户未登录");
+            return null;
         }
         if (!Objects.equals(user.getUserStatus(), MANAGER_STATUS)) {
             log.warn("该用户未具有管理员权限");
-            return R.fails("该用户未具有管理员权限");
+            return null;
         }
         //开始查询用户
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("username", username);
-        return R.ok(null, userMapper.selectList(queryWrapper).stream().map(this::getSafeUser).collect(Collectors.toList()));
+        return userMapper.selectList(queryWrapper).stream().map(this::getSafeUser).collect(Collectors.toList());
+    }
+
+    @Override
+    public User userStatus(HttpSession session) {
+        User user = (User) session.getAttribute(USER_LOGIN_STATUS);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", user.getId());
+        return getSafeUser(userMapper.selectOne(queryWrapper));
     }
 
     /**

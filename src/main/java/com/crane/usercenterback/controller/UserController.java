@@ -11,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
+
+import static com.crane.usercenterback.constant.UserConstant.USER_LOGIN_STATUS;
 
 /**
  * 用户控制层
@@ -39,7 +42,7 @@ public class UserController {
         if (StringUtils.isAnyBlank(username, password, checkPassword)) {
             return null;
         }
-        return userService.userRegister(username, userRegisterRequest.getNickname(), password, checkPassword);
+        return R.ok("注册成功", userService.userRegister(username, userRegisterRequest.getNickname(), password, checkPassword));
     }
 
     @PostMapping("/login")
@@ -49,7 +52,7 @@ public class UserController {
         if (StringUtils.isAnyBlank(username, password)) {
             return null;
         }
-        return userService.userLogin(username, password, request);
+        return R.ok("登录成功", userService.userLogin(username, password, request));
     }
 
     /**
@@ -60,7 +63,12 @@ public class UserController {
      */
     @GetMapping("/query")
     public GeneralResponse<List<User>> userQuery(String username, HttpServletRequest request) {
-        return userService.userQuery(username, request);
+        return R.ok(null, userService.userQuery(username, request));
+    }
+
+    @GetMapping("/current")
+    public GeneralResponse<User> userStatus(HttpSession session) {
+        return R.ok(null, userService.userStatus(session));
     }
 
 }

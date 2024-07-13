@@ -6,6 +6,7 @@ import com.crane.usercenterback.utils.result.GeneralResponse;
 import com.crane.usercenterback.utils.result.R;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ public interface UserService extends IService<User> {
      * @Author Crane Resigned
      * @Date 2024/6/21 22:34:39
      */
-    GeneralResponse<Long> userRegister(String username, String nickName, String password, String checkPassword);
+    Long userRegister(String username, String nickName, String password, String checkPassword);
 
     /**
      * 登录功能，返回的user是脱敏后的user
@@ -29,7 +30,7 @@ public interface UserService extends IService<User> {
      * @Author Crane Resigned
      * @Date 2024/6/21 22:43:12
      */
-    GeneralResponse<User> userLogin(String username, String password, HttpServletRequest request);
+    User userLogin(String username, String password, HttpServletRequest request);
 
     /**
      * 这是一个管理员功能，调用此方法时需要用户鉴权
@@ -38,5 +39,13 @@ public interface UserService extends IService<User> {
      * @Author CraneResigned
      * @Date 2024/6/23 18:30:40
      */
-    GeneralResponse<List<User>> userQuery(String username, HttpServletRequest request);
+    List<User> userQuery(String username, HttpServletRequest request);
+
+    /**
+     * 获取用户登录态
+     *
+     * @Author CraneResigned
+     * @Date 2024/7/13 18:56:46
+     */
+    User userStatus(HttpSession session);
 }
