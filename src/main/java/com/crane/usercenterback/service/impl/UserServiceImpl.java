@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.crane.usercenterback.mapper.UserMapper;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.service.UserService;
+import com.crane.usercenterback.utils.result.GeneralResponse;
+import com.crane.usercenterback.utils.result.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,25 +53,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @Date 2024/7/7 11:14:40
      */
     @Override
-    public Long userRegister(String username, String nickName, String password, String checkPassword) {
+    public GeneralResponse<Long> userRegister(String username, String nickName, String password, String checkPassword) {
         //判空处理
         if (StringUtils.isAnyBlank(username, password, checkPassword)) {
-            return -1L;
+            return R.fails("用户名、密码、确认密码都不能为空");
         }
         //密码不一致
         if (!password.equals(checkPassword)) {
-            return -1L;
+            return R.fails("密码与确认密码不一致");
         }
         //校验是否含有特殊字符
         String regEx = "\\pP|\\pS|\\s+";
         if (username.matches(regEx)) {
-            return -1L;
+            return R.fails("用户名不能含有特殊字符");
         }
         //账户名不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         if (userMapper.selectCount(queryWrapper) > 0) {
-            return -1L;
+            return R.fails("用户名重复，请重新输入");
         }
         User user = new User();
         user.setUsername(username);
@@ -78,33 +80,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
         boolean save = this.save(user);
         if (!save) {
-            return -1L;
+            return R.fails("注册失败");
         }
         log.info("注册成功");
-        return user.getId();
+        return R.ok("注册成功", user.getId());
     }
 
     @Override
-    public User userLogin(String username, String password, HttpServletRequest request) {
+    public GeneralResponse<User> userLogin(String username, String password, HttpServletRequest request) {
         if (StringUtils.isAnyBlank(username, password)) {
             return null;
         }
         //校验是否含有特殊字符
         String regEx = "\\pP|\\pS|\\s+";
         if (username.matches(regEx)) {
-            return null;
+            return R.fails("用户名含有特殊字符");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         queryWrapper.eq("user_password", DigestUtils.md5DigestAsHex(password.getBytes()));
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
-            return null;
+            return R.fails("用户名不存在");
         }
         User safeUser = getSafeUser(user);
         request.getSession().setAttribute(USER_LOGIN_STATUS, safeUser);
         log.info("登录成功");
-        return safeUser;
+        return R.ok("登录成功", safeUser);
     }
 
     /**
@@ -115,23 +117,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @Date 2024/7/7 10:57:42
      */
     @Override
-    public List<User> userQuery(String username, HttpServletRequest request) {
+    public GeneralResponse<List<User>> userQuery(String username, HttpServletRequest request) {
         //用户鉴权
         User user = (User) request.getSession().getAttribute(USER_LOGIN_STATUS);
         if (user == null) {
             //这里要提示未登录，同下TODO
             log.error("用户未登录");
-            return null;
+            return R.fails("用户未登录");
         }
         if (!Objects.equals(user.getUserStatus(), MANAGER_STATUS)) {
-            //TODO: 这里先返回null，后期搭建前端后统一配置返回体
             log.warn("该用户未具有管理员权限");
-            return null;
+            return R.fails("该用户未具有管理员权限");
         }
         //开始查询用户
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("username", username);
-        return userMapper.selectList(queryWrapper).stream().map(this::getSafeUser).collect(Collectors.toList());
+        return R.ok(null, userMapper.selectList(queryWrapper).stream().map(this::getSafeUser).collect(Collectors.toList()));
     }
 
     /**

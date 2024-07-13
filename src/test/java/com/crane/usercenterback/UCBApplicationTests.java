@@ -41,8 +41,8 @@ class UCBApplicationTests {
 
     @Test
     void testSaveUser(){
-        Long user01 = userService.userRegister("user01", null, "123", "123");
-        System.out.println(user01);
+        userService.userRegister("user01", null, "123", "123");
+
     }
 
 }

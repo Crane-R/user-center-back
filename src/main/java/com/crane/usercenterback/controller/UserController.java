@@ -4,6 +4,8 @@ import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.request.UserLoginRequest;
 import com.crane.usercenterback.model.request.UserRegisterRequest;
 import com.crane.usercenterback.service.UserService;
+import com.crane.usercenterback.utils.result.GeneralResponse;
+import com.crane.usercenterback.utils.result.R;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +32,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public GeneralResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         String username = userRegisterRequest.getUsername();
         String password = userRegisterRequest.getPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
@@ -41,7 +43,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public GeneralResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         String username = userLoginRequest.getUsername();
         String password = userLoginRequest.getPassword();
         if (StringUtils.isAnyBlank(username, password)) {
@@ -57,7 +59,7 @@ public class UserController {
      * @Date 2024/7/7 11:09:22
      */
     @GetMapping("/query")
-    public List<User> userQuery(String username, HttpServletRequest request) {
+    public GeneralResponse<List<User>> userQuery(String username, HttpServletRequest request) {
         return userService.userQuery(username, request);
     }
 
