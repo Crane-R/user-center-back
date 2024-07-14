@@ -14,8 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.crane.usercenterback.constant.UserConstant.USER_LOGIN_STATUS;
-
 /**
  * 用户控制层
  *
@@ -66,6 +64,12 @@ public class UserController {
         return R.ok(null, userService.userQuery(username, request));
     }
 
+    /**
+     * 前端登录时会调用此接口
+     *
+     * @Author CraneResigned
+     * @Date 2024/7/14 14:01:13
+     */
     @GetMapping("/current")
     public GeneralResponse<User> userStatus(HttpSession session) {
         return R.ok(null, userService.userStatus(session));

@@ -2,18 +2,16 @@ package com.crane.usercenterback.service;
 
 import com.crane.usercenterback.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.crane.usercenterback.utils.result.GeneralResponse;
-import com.crane.usercenterback.utils.result.R;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
- * @author CraneResigned
- * @description 针对表【user】的数据库操作Service
- * @createDate 2024-06-20 23:08:56
- */
+* @author CraneResigned
+* @description 针对表【user】的数据库操作Service
+* @createDate 2024-07-14 13:59:22
+*/
 public interface UserService extends IService<User> {
 
     /**
@@ -48,4 +46,5 @@ public interface UserService extends IService<User> {
      * @Date 2024/7/13 18:56:46
      */
     User userStatus(HttpSession session);
+
 }

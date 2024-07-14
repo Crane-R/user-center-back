@@ -1,12 +1,11 @@
 package com.crane.usercenterback.service.impl;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.crane.usercenterback.mapper.UserMapper;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.service.UserService;
-import com.crane.usercenterback.utils.result.GeneralResponse;
-import com.crane.usercenterback.utils.result.R;
+import com.crane.usercenterback.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,21 +14,24 @@ import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.crane.usercenterback.constant.UserConstant.MANAGER_STATUS;
 import static com.crane.usercenterback.constant.UserConstant.USER_LOGIN_STATUS;
+import static java.util.Arrays.stream;
 
 /**
  * @author CraneResigned
  * @description 针对表【user】的数据库操作Service实现
- * @createDate 2024-06-20 23:08:56
+ * @createDate 2024-07-14 13:59:22
  */
 @Service
 @Slf4j
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserMapper, User>
+        implements UserService {
 
     @Autowired
     private UserMapper userMapper;
@@ -120,14 +122,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.error("用户未登录");
             return null;
         }
-        if (!Objects.equals(user.getUserStatus(), MANAGER_STATUS)) {
+        if (!Objects.equals(user.getUserRole(), MANAGER_STATUS)) {
             log.warn("该用户未具有管理员权限");
             return null;
         }
         //开始查询用户
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("username", username);
-        return userMapper.selectList(queryWrapper).stream().map(this::getSafeUser).collect(Collectors.toList());
+        List<User> userList;
+        if (CharSequenceUtil.isEmpty(username)) {
+            userList = userMapper.selectList(null);
+        } else {
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.like("username", username);
+            userList = userMapper.selectList(queryWrapper);
+        }
+        //TODO:这里能否使用流来实现？
+        List<User> safeUserList = new ArrayList<>();
+        userList.forEach(u -> safeUserList.add(getSafeUser(u)));
+        return safeUserList;
     }
 
     @Override
@@ -157,6 +168,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safeUser.setUserStatus(user.getUserStatus());
         safeUser.setCreateTime(user.getCreateTime());
         safeUser.setUpdateTime(user.getUpdateTime());
+        safeUser.setUserRole(user.getUserRole());
         return safeUser;
     }
 }
