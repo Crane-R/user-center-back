@@ -6,6 +6,7 @@ import com.crane.usercenterback.model.request.UserRegisterRequest;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.utils.result.GeneralResponse;
 import com.crane.usercenterback.utils.result.R;
+import com.sun.org.apache.xpath.internal.objects.XNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -73,6 +74,18 @@ public class UserController {
     @GetMapping("/current")
     public GeneralResponse<User> userStatus(HttpSession session) {
         return R.ok(null, userService.userStatus(session));
+    }
+
+    /**
+     * 退出接口
+     *
+     * @Author CraneResigned
+     * @Date 2024/7/17 13:29:57
+     */
+    @PostMapping("/logout")
+    public GeneralResponse<XNull> userLogout(HttpSession session) {
+        userService.userLogout(session);
+        return R.ok();
     }
 
 }

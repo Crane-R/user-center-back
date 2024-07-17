@@ -171,6 +171,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safeUser.setUserRole(user.getUserRole());
         return safeUser;
     }
+
+    @Override
+    public void userLogout(HttpSession session) {
+        session.removeAttribute(USER_LOGIN_STATUS);
+    }
 }
 
 

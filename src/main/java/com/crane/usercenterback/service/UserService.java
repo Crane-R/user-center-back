@@ -47,4 +47,12 @@ public interface UserService extends IService<User> {
      */
     User userStatus(HttpSession session);
 
+    /**
+     * 用户注销
+     *
+     * @Author CraneResigned
+     * @Date 2024/7/17 13:29:57
+     */
+    void userLogout(HttpSession session);
+
 }

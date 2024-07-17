@@ -1,8 +1,7 @@
 package com.crane.usercenterback.utils.result;
 
+import com.sun.org.apache.xpath.internal.objects.XNull;
 import lombok.Data;
-
-import java.util.Map;
 
 /**
  * 统一返回体
@@ -13,11 +12,15 @@ import java.util.Map;
 @Data
 public final class R {
 
+    public static GeneralResponse<XNull> ok() {
+        return new GeneralResponse<>("ok", null, null);
+    }
+
     public static <T> GeneralResponse<T> ok(String msg, T data) {
         return new GeneralResponse<>("ok", msg, data);
     }
 
     public static <T> GeneralResponse<T> fails(String msg) {
-       return new GeneralResponse<>("fails",msg,null);
+        return new GeneralResponse<>("fails", msg, null);
     }
 }

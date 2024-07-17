@@ -2,7 +2,6 @@ package com.crane.usercenterback.utils.result;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.apache.ibatis.annotations.ConstructorArgs;
 
 /**
  * 通用返回体
