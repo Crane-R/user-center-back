@@ -1,11 +1,12 @@
 package com.crane.usercenterback.controller;
 
+import com.crane.usercenterback.common.SuccessStatus;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.request.UserLoginRequest;
 import com.crane.usercenterback.model.request.UserRegisterRequest;
 import com.crane.usercenterback.service.UserService;
-import com.crane.usercenterback.utils.result.GeneralResponse;
-import com.crane.usercenterback.utils.result.R;
+import com.crane.usercenterback.common.GeneralResponse;
+import com.crane.usercenterback.common.R;
 import com.sun.org.apache.xpath.internal.objects.XNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class UserController {
         if (StringUtils.isAnyBlank(username, password, checkPassword)) {
             return null;
         }
-        return R.ok("注册成功", userService.userRegister(username, userRegisterRequest.getNickname(), password, checkPassword));
+        return R.ok(userService.userRegister(username, userRegisterRequest.getNickname(), password, checkPassword), "注册成功");
     }
 
     @PostMapping("/login")
@@ -51,7 +52,7 @@ public class UserController {
         if (StringUtils.isAnyBlank(username, password)) {
             return null;
         }
-        return R.ok("登录成功", userService.userLogin(username, password, request));
+        return R.ok(userService.userLogin(username, password, request), "登录成功");
     }
 
     /**
@@ -62,7 +63,7 @@ public class UserController {
      */
     @GetMapping("/query")
     public GeneralResponse<List<User>> userQuery(String username, HttpServletRequest request) {
-        return R.ok(null, userService.userQuery(username, request));
+        return R.ok(userService.userQuery(username, request));
     }
 
     /**
@@ -73,7 +74,7 @@ public class UserController {
      */
     @GetMapping("/current")
     public GeneralResponse<User> userStatus(HttpSession session) {
-        return R.ok(null, userService.userStatus(session));
+        return R.ok(userService.userStatus(session));
     }
 
     /**
@@ -85,7 +86,7 @@ public class UserController {
     @PostMapping("/logout")
     public GeneralResponse<XNull> userLogout(HttpSession session) {
         userService.userLogout(session);
-        return R.ok();
+        return R.ok("用户已注销");
     }
 
 }
