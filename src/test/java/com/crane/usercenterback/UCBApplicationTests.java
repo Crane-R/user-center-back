@@ -41,7 +41,7 @@ class UCBApplicationTests {
 
     @Test
     void testSaveUser(){
-        userService.userRegister("user01", null, "123", "123");
+        //userService.userRegister("user01", null, "123", "123");
 
     }
 

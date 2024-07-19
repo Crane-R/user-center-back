@@ -28,4 +28,8 @@ public final class R {
         return new GeneralResponse<>(status.getCode(), null, status.getMessage(), description);
     }
 
+    public static <T> GeneralResponse<T> error(ErrorStatus status, T data, String description) {
+        return new GeneralResponse<>(status.getCode(), data, status.getMessage(), description);
+    }
+
 }

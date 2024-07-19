@@ -2,16 +2,17 @@ package com.crane.usercenterback.service;
 
 import com.crane.usercenterback.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.crane.usercenterback.model.domain.UserDto;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
-* @author CraneResigned
-* @description 针对表【user】的数据库操作Service
-* @createDate 2024-07-14 13:59:22
-*/
+ * @author CraneResigned
+ * @description 针对表【user】的数据库操作Service
+ * @createDate 2024-07-14 13:59:22
+ */
 public interface UserService extends IService<User> {
 
     /**
@@ -20,7 +21,7 @@ public interface UserService extends IService<User> {
      * @Author Crane Resigned
      * @Date 2024/6/21 22:34:39
      */
-    Long userRegister(String username, String nickName, String password, String checkPassword);
+    Long userRegister(UserDto userDto);
 
     /**
      * 登录功能，返回的user是脱敏后的user
@@ -54,5 +55,13 @@ public interface UserService extends IService<User> {
      * @Date 2024/7/17 13:29:57
      */
     void userLogout(HttpSession session);
+
+    /**
+     * 删除用户
+     *
+     * @Author CraneResigned
+     * @Date 2024/7/19 21:03:09
+     */
+    Boolean userDelete(Long userId);
 
 }

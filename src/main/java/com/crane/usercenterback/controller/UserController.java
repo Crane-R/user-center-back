@@ -1,7 +1,9 @@
 package com.crane.usercenterback.controller;
 
+import com.crane.usercenterback.common.ErrorStatus;
 import com.crane.usercenterback.common.SuccessStatus;
 import com.crane.usercenterback.model.domain.User;
+import com.crane.usercenterback.model.domain.UserDto;
 import com.crane.usercenterback.model.request.UserLoginRequest;
 import com.crane.usercenterback.model.request.UserRegisterRequest;
 import com.crane.usercenterback.service.UserService;
@@ -35,14 +37,14 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public GeneralResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
-        String username = userRegisterRequest.getUsername();
-        String password = userRegisterRequest.getPassword();
-        String checkPassword = userRegisterRequest.getCheckPassword();
+    public GeneralResponse<Long> userRegister(@RequestBody UserDto userDto) {
+        String username = userDto.getUsername();
+        String password = userDto.getPassword();
+        String checkPassword = userDto.getCheckPassword();
         if (StringUtils.isAnyBlank(username, password, checkPassword)) {
             return null;
         }
-        return R.ok(userService.userRegister(username, userRegisterRequest.getNickname(), password, checkPassword), "注册成功");
+        return R.ok(userService.userRegister(userDto), "注册成功");
     }
 
     @PostMapping("/login")
@@ -87,6 +89,22 @@ public class UserController {
     public GeneralResponse<XNull> userLogout(HttpSession session) {
         userService.userLogout(session);
         return R.ok("用户已注销");
+    }
+
+    /**
+     * 删除
+     *
+     * @Author CraneResigned
+     * @Date 2024/7/19 19:05:39
+     */
+    @PostMapping("/delete")
+    public GeneralResponse<Boolean> deleteUser(@RequestBody String userId) {
+        Boolean b = userService.userDelete(Long.parseLong(userId));
+        if (b) {
+            return R.ok(true, "删除成功");
+        } else {
+            return R.error(ErrorStatus.SYSTEM_ERROR, false, "删除失败");
+        }
     }
 
 }

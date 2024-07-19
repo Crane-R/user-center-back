@@ -10,7 +10,7 @@
     <groupId>com.craneresigned</groupId>
     <artifactId>user-center-back</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>user-center-back</name>
     <description>user-center-back</description>
     <properties>

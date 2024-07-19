@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.crane.usercenterback.common.ErrorStatus;
 import com.crane.usercenterback.exception.BusinessException;
 import com.crane.usercenterback.model.domain.User;
+import com.crane.usercenterback.model.domain.UserDto;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.util.DigestUtils;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,7 +46,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @Date 2024/7/7 11:14:40
      */
     @Override
-    public Long userRegister(String username, String nickName, String password, String checkPassword) {
+    public Long userRegister(UserDto userDto) {
+        String username = userDto.getUsername();
+        String password = userDto.getPassword();
+        String checkPassword = userDto.getCheckPassword();
+        String nickName = userDto.getNickName();
+        Integer gender = userDto.getGender();
+
         //判空处理
         if (StringUtils.isAnyBlank(username, password, checkPassword)) {
             log.error("用户名、密码、确认密码都不能为空");
@@ -73,6 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setNickName(StringUtils.isBlank(nickName) ? username : nickName);
         //加密
         user.setUserPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
+        user.setGender(gender);
         boolean save = this.save(user);
         if (!save) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "用户新增失败");
@@ -98,7 +107,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
             log.error("用户名不存在");
-            throw new BusinessException(ErrorStatus.USER_NULL, null);
+            throw new BusinessException(ErrorStatus.USER_NULL, "用户名或密码错误");
         }
         User safeUser = getSafeUser(user);
         request.getSession().setAttribute(USER_LOGIN_STATUS, safeUser);
@@ -141,6 +150,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //TODO:这里能否使用流来实现？
         List<User> safeUserList = new ArrayList<>();
         userList.forEach(u -> safeUserList.add(getSafeUser(u)));
+        Collections.reverse(safeUserList);
         return safeUserList;
     }
 
@@ -178,6 +188,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public void userLogout(HttpSession session) {
         session.removeAttribute(USER_LOGIN_STATUS);
+    }
+
+    @Override
+    public Boolean userDelete(Long userId) {
+        int i = userMapper.deleteById(userId);
+        return i > 0;
     }
 }
 

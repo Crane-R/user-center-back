@@ -8,6 +8,7 @@ import lombok.Data;
  * @Author Crane Resigned
  * @Date 2024/6/21 22:02:06
  */
+@Deprecated
 @Data
 public class UserRegisterRequest {
 

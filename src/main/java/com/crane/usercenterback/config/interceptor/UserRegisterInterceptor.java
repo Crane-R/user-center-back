@@ -32,7 +32,7 @@ public class UserRegisterInterceptor implements HandlerInterceptor {
         String nickname = jsonObject.getStr("nickname");
         String password = jsonObject.getStr("password");
         String checkPassword = jsonObject.getStr("checkPassword");
-        if (CharSequenceUtil.hasBlank(username, nickname, password, checkPassword)) {
+        if (CharSequenceUtil.hasBlank(username, password, checkPassword)) {
             log.error("传入的参数有空值");
             return false;
         }

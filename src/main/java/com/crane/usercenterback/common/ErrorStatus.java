@@ -12,9 +12,10 @@ import lombok.Getter;
 public enum ErrorStatus {
     SYSTEM_ERROR(50000, "系统错误"),
     NULL_ERROR(50001, "空值异常"),
-    NO_LOGIN(40000,"用户未登录"),
-    USER_NULL(40001,"用户不存在"),
-    PARAM_ERROR(40002,"参数错误"),
+    BUSINESS_ERROR(50002, "业务错误"),
+    NO_LOGIN(40000, "用户未登录"),
+    USER_NULL(40001, "用户不存在"),
+    PARAM_ERROR(40002, "参数错误"),
     NO_AUTHORITY(40003, "无权限");
     private final Integer code;
 
