@@ -1,7 +1,7 @@
 package com.crane.usercenterback.service;
 
-import com.crane.usercenterback.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,5 +63,13 @@ public interface UserService extends IService<User> {
      * @Date 2024/7/19 21:03:09
      */
     Boolean userDelete(Long userId);
+
+    /**
+     * 根据标签查询用户，根据一个状态符判断是or还是and
+     *
+     * @Author CraneResigned
+     * @Date 2024/7/21 15:27:26
+     */
+    List<User> userQueryByTags(List<String> tagNamesList, boolean isAnd);
 
 }

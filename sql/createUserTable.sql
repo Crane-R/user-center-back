@@ -12,6 +12,7 @@ create table user
     create_time   datetime default CURRENT_TIMESTAMP null comment '创建时间',
     update_time   datetime default CURRENT_TIMESTAMP null comment '修改时间',
     is_delete     tinyint  default 0                 not null comment '是否删除',
-    user_role     int      default 0                 not null comment '用户角色'
+    user_role     int      default 0                 not null comment '用户角色',
+    tags          varchar(1024)                      null comment '标签'
 );
 

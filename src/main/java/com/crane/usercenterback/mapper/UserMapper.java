@@ -1,7 +1,7 @@
 package com.crane.usercenterback.mapper;
 
-import com.crane.usercenterback.model.domain.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.crane.usercenterback.model.domain.User;
 
 /**
 * @author CraneResigned

@@ -1,11 +1,9 @@
 package com.crane.usercenterback.controller;
 
 import com.crane.usercenterback.common.ErrorStatus;
-import com.crane.usercenterback.common.SuccessStatus;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
 import com.crane.usercenterback.model.request.UserLoginRequest;
-import com.crane.usercenterback.model.request.UserRegisterRequest;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.common.GeneralResponse;
 import com.crane.usercenterback.common.R;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -105,6 +104,19 @@ public class UserController {
         } else {
             return R.error(ErrorStatus.SYSTEM_ERROR, false, "删除失败");
         }
+    }
+
+    /**
+     * 根据标签查询用户
+     * a,b这样传就行
+     *
+     * @Author CraneResigned
+     * @Date 2024/7/21 15:48:59
+     */
+    @GetMapping("/userQueryByTags")
+    public GeneralResponse<List<User>> userQueryByTags(String tagNamesJson, Boolean isAnd) {
+        String[] split = tagNamesJson.split(",");
+        return R.ok(userService.userQueryByTags(Arrays.asList(split), isAnd));
     }
 
 }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.crane.usercenterback.constant.UserConstant.MANAGER_STATUS;
 import static com.crane.usercenterback.constant.UserConstant.USER_LOGIN_STATUS;
@@ -195,6 +196,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         int i = userMapper.deleteById(userId);
         return i > 0;
     }
+
+    @Override
+    public List<User> userQueryByTags(List<String> tagNamesList, boolean isAnd) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (isAnd) {
+            tagNamesList.forEach(tag -> queryWrapper.like("tags", tag));
+        } else {
+            tagNamesList.forEach(tag -> queryWrapper.or(innerWrapper -> innerWrapper.like("tags", tag)));
+        }
+        return userMapper.selectList(queryWrapper).stream().map(this::getSafeUser).collect(Collectors.toList());
+    }
+
 }
 
 
