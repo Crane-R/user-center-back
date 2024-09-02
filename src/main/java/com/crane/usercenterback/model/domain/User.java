@@ -7,7 +7,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 
+ *
  * @TableName user
  */
 @TableName(value ="user")
@@ -75,6 +75,11 @@ public class User implements Serializable {
      */
     private String tags;
 
+    /**
+     * 简介
+     */
+    private String introduction;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -101,7 +106,8 @@ public class User implements Serializable {
             && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
             && (this.getIsDelete() == null ? other.getIsDelete() == null : this.getIsDelete().equals(other.getIsDelete()))
             && (this.getUserRole() == null ? other.getUserRole() == null : this.getUserRole().equals(other.getUserRole()))
-            && (this.getTags() == null ? other.getTags() == null : this.getTags().equals(other.getTags()));
+            && (this.getTags() == null ? other.getTags() == null : this.getTags().equals(other.getTags()))
+                && (this.getIntroduction() == null ? other.getIntroduction() == null : this.getIntroduction().equals(other.getIntroduction()));
     }
 
     @Override
@@ -120,6 +126,7 @@ public class User implements Serializable {
         result = prime * result + ((getIsDelete() == null) ? 0 : getIsDelete().hashCode());
         result = prime * result + ((getUserRole() == null) ? 0 : getUserRole().hashCode());
         result = prime * result + ((getTags() == null) ? 0 : getTags().hashCode());
+        result = prime * result + ((getIntroduction() == null) ? 0 : getIntroduction().hashCode());
         return result;
     }
 
@@ -141,6 +148,7 @@ public class User implements Serializable {
         sb.append(", isDelete=").append(isDelete);
         sb.append(", userRole=").append(userRole);
         sb.append(", tags=").append(tags);
+        sb.append(", introduction=").append(introduction);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

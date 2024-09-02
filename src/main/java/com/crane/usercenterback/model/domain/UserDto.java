@@ -32,11 +32,27 @@ public class UserDto {
      * @Author CraneResigned
      * @Date 2024/7/19 15:37:48
      */
-    private String CheckPassword;
+    private String checkPassword;
 
     /**
      * 性别
      */
     private Integer gender = 2;
+
+    /**
+     * 简介
+     *
+     * @Author CraneResigned
+     * @Date 2024/9/2 21:09:29
+     */
+    private String introduction;
+
+    /**
+     * 用户角色
+     *
+     * @Author CraneResigned
+     * @Date 2024/9/2 21:25:47
+     */
+    private Integer userRole;
 
 }
