@@ -2,6 +2,7 @@ package com.crane.usercenterback;
 
 import com.baomidou.mybatisplus.core.toolkit.Assert;
 import com.crane.usercenterback.mapper.UserMapper;
+import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

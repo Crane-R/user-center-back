@@ -1,12 +1,15 @@
 package com.crane.usercenterback.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.crane.usercenterback.common.ErrorStatus;
 import com.crane.usercenterback.exception.BusinessException;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
+import com.crane.usercenterback.model.domain.UserVo;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +20,7 @@ import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.crane.usercenterback.constant.UserConstant.MANAGER_STATUS;
@@ -70,6 +70,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             log.error("用户名不能含有特殊字符");
             throw new BusinessException(ErrorStatus.PARAM_ERROR, "用户名含有特殊字符");
         }
+
+        //判断标签是否为空
+        String[] tagNames = userDto.getTagNames();
+        if (CharSequenceUtil.isAllBlank(tagNames)) {
+            log.error("标签组合不能为空");
+            throw new BusinessException(ErrorStatus.PARAM_ERROR, "新注册用户至少要有一个标签");
+        }
+
         //账户名不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
@@ -83,6 +91,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //加密
         user.setUserPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
         user.setGender(gender);
+        user.setTags(Arrays.toString(tagNames));
         boolean save = this.save(user);
         if (!save) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "用户新增失败");
@@ -198,14 +207,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public List<User> userQueryByTags(List<String> tagNamesList, boolean isAnd) {
+    public List<UserVo> userQueryByTags(List<String> tagNamesList, boolean isAnd) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (isAnd) {
             tagNamesList.forEach(tag -> queryWrapper.like("tags", tag));
         } else {
             tagNamesList.forEach(tag -> queryWrapper.or(innerWrapper -> innerWrapper.like("tags", tag)));
         }
-        return userMapper.selectList(queryWrapper).stream().map(this::getSafeUser).collect(Collectors.toList());
+
+        //将user转换为userVo
+        List<UserVo> resultList = new ArrayList<>();
+        userMapper.selectList(queryWrapper).forEach(e -> {
+            UserVo userVo = new UserVo();
+            userVo.setAvatarUrl(e.getAvatarUrl());
+            userVo.setGender(e.getGender());
+            userVo.setId(e.getId());
+            userVo.setIntroduction(e.getIntroduction());
+            userVo.setNickName(e.getNickName());
+            userVo.setUserRole(e.getUserRole());
+            userVo.setUserStatus(e.getUserStatus());
+            userVo.setUsername(e.getUsername());
+            userVo.setTags(JSONUtil.parseArray(e.getTags()).toList(String.class));
+            resultList.add(userVo);
+        });
+
+        return resultList;
     }
 
 }

@@ -3,6 +3,7 @@ package com.crane.usercenterback.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
+import com.crane.usercenterback.model.domain.UserVo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -70,6 +71,6 @@ public interface UserService extends IService<User> {
      * @Author CraneResigned
      * @Date 2024/7/21 15:27:26
      */
-    List<User> userQueryByTags(List<String> tagNamesList, boolean isAnd);
+    List<UserVo> userQueryByTags(List<String> tagNamesList, boolean isAnd);
 
 }

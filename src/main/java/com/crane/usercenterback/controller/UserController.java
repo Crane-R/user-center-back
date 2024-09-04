@@ -3,6 +3,7 @@ package com.crane.usercenterback.controller;
 import com.crane.usercenterback.common.ErrorStatus;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
+import com.crane.usercenterback.model.domain.UserVo;
 import com.crane.usercenterback.model.request.UserLoginRequest;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.common.GeneralResponse;
@@ -25,6 +26,7 @@ import java.util.List;
  */
 @RestController()
 @RequestMapping("/user")
+@CrossOrigin
 public class UserController {
 
     @Autowired
@@ -114,8 +116,8 @@ public class UserController {
      * @Date 2024/7/21 15:48:59
      */
     @GetMapping("/userQueryByTags")
-    public GeneralResponse<List<User>> userQueryByTags(String tagNamesJson, Boolean isAnd) {
-        String[] split = tagNamesJson.split(",");
+    public GeneralResponse<List<UserVo>> userQueryByTags(String tagNames, Boolean isAnd) {
+        String[] split = tagNames.split(",");
         return R.ok(userService.userQueryByTags(Arrays.asList(split), isAnd));
     }
 

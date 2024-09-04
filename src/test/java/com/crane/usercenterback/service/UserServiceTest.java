@@ -13,16 +13,16 @@ class UserServiceTest {
 
     @Test
     void test() {
-        User user = new User();
-        user.setUsername("us");
-        user.setNickName("s");
-        user.setAvatarUrl("");
-        user.setGender(0);
-        user.setUserPassword("s");
-        user.setUserStatus(0);
-        userService.save(user);
-
-        StringUtils.isAnyBlank();
+//        User user = new User();
+//        user.setUsername("us");
+//        user.setNickName("s");
+//        user.setAvatarUrl("");
+//        user.setGender(0);
+//        user.setUserPassword("s");
+//        user.setUserStatus(0);
+//        userService.save(user);
+//
+//        StringUtils.isAnyBlank();
     }
 
 

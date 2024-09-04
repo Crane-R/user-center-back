@@ -55,4 +55,12 @@ public class UserDto {
      */
     private Integer userRole;
 
+    /**
+     * 标签名称
+     *
+     * @Author CraneResigned
+     * @Date 2024/9/4 22:25:48
+     */
+    private String[] tagNames;
+
 }
