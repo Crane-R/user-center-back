@@ -92,6 +92,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
         user.setGender(gender);
         user.setTags(Arrays.toString(tagNames));
+        user.setIntroduction(userDto.getIntroduction());
         boolean save = this.save(user);
         if (!save) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "用户新增失败");

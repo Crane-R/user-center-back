@@ -1,6 +1,8 @@
 package com.crane.usercenterback.controller;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.crane.usercenterback.common.ErrorStatus;
+import com.crane.usercenterback.exception.BusinessException;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
 import com.crane.usercenterback.model.domain.UserVo;
@@ -117,6 +119,9 @@ public class UserController {
      */
     @GetMapping("/userQueryByTags")
     public GeneralResponse<List<UserVo>> userQueryByTags(String tagNames, Boolean isAnd) {
+        if (CharSequenceUtil.isBlank(tagNames)) {
+            throw new BusinessException(ErrorStatus.PARAM_ERROR, "标签不能为空");
+        }
         String[] split = tagNames.split(",");
         return R.ok(userService.userQueryByTags(Arrays.asList(split), isAnd));
     }

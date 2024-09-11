@@ -1,5 +1,4 @@
--- auto-generated definition
-create table user
+create table `user-center`.user
 (
     id            bigint auto_increment comment '用户id'
         primary key,
@@ -13,6 +12,7 @@ create table user
     update_time   datetime default CURRENT_TIMESTAMP null comment '修改时间',
     is_delete     tinyint  default 0                 not null comment '是否删除',
     user_role     int      default 0                 not null comment '用户角色',
-    tags          varchar(1024)                      null comment '标签'
+    tags          varchar(1024)                      null comment '标签',
+    introduction  varchar(255)                       null comment '简介'
 );
 
