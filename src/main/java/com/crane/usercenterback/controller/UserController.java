@@ -78,8 +78,8 @@ public class UserController {
      * @Date 2024/7/14 14:01:13
      */
     @GetMapping("/current")
-    public GeneralResponse<User> userStatus(HttpSession session) {
-        return R.ok(userService.userStatus(session));
+    public GeneralResponse<User> userCurrent(HttpSession session) {
+        return R.ok(userService.userCurrent(session));
     }
 
     /**
@@ -124,6 +124,18 @@ public class UserController {
         }
         String[] split = tagNames.split(",");
         return R.ok(userService.userQueryByTags(Arrays.asList(split), isAnd));
+    }
+
+    @PostMapping("/update")
+    public GeneralResponse<Boolean> updateUser(@RequestBody User user, HttpSession session) {
+        if (user == null) {
+            throw new BusinessException(ErrorStatus.PARAM_ERROR, "修改的用户不能为空");
+        }
+        User loginUser = userCurrent(session).getData();
+        if (loginUser == null) {
+            throw new BusinessException(ErrorStatus.NO_LOGIN);
+        }
+        return R.ok(userService.updateUser(user, loginUser),"用户已经被修改");
     }
 
 }

@@ -166,8 +166,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public User userStatus(HttpSession session) {
+    public User userCurrent(HttpSession session) {
         User user = (User) session.getAttribute(USER_LOGIN_STATUS);
+        if (user == null) {
+            throw new BusinessException(ErrorStatus.NO_LOGIN, "请先登录");
+        }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", user.getId());
         return getSafeUser(userMapper.selectOne(queryWrapper));
@@ -233,6 +236,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         });
 
         return resultList;
+    }
+
+    /**
+     * 修改用户，只有管理员和用户自己能够修改
+     *
+     * @param user
+     * @param loginUser
+     * @return
+     */
+    @Override
+    public boolean updateUser(User user, User loginUser) {
+        Long id = user.getId();
+        if (id < 0) {
+            throw new BusinessException(ErrorStatus.PARAM_ERROR, "ID错误");
+        }
+        //如果进来的用户不是管理员或者不是用户自己就抛出异常
+        if (!isAdmin(loginUser) && !Objects.equals(id, loginUser.getId())) {
+            throw new BusinessException(ErrorStatus.NO_AUTHORITY, "无权修改");
+        }
+        User updatedUser = userMapper.selectById(id);
+        if (updatedUser == null) {
+            throw new BusinessException(ErrorStatus.USER_NULL);
+        }
+        return userMapper.updateById(updatedUser) == 1;
+    }
+
+    /**
+     * 判断某个用户是否是管理员
+     *
+     * @param user
+     * @return
+     */
+    private boolean isAdmin(User user) {
+        return user != null && Objects.equals(user.getUserRole(), MANAGER_STATUS);
     }
 
 }
