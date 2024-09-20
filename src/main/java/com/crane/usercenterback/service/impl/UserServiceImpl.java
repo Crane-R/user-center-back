@@ -93,6 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setGender(gender);
         user.setTags(Arrays.toString(tagNames));
         user.setIntroduction(userDto.getIntroduction());
+        user.setUserRole(userDto.getUserRole());
         boolean save = this.save(user);
         if (!save) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "用户新增失败");

@@ -135,7 +135,7 @@ public class UserController {
         if (loginUser == null) {
             throw new BusinessException(ErrorStatus.NO_LOGIN);
         }
-        return R.ok(userService.updateUser(user, loginUser),"用户已经被修改");
+        return R.ok(userService.updateUser(user, loginUser), "用户已经被修改");
     }
 
 }
