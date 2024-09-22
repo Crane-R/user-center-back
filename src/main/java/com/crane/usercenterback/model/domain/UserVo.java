@@ -14,15 +14,17 @@ import java.util.List;
 @Data
 public class UserVo implements Serializable {
 
+    private Long userId;
+
+    private String username;
+
+    private String nickname;
+
     private String avatarUrl;
-
-    private Integer gender;
-
-    private Long id;
 
     private String introduction;
 
-    private String nickName;
+    private Integer gender;
 
     private List<String> tags;
 
@@ -30,6 +32,5 @@ public class UserVo implements Serializable {
 
     private Integer userStatus;
 
-    private String username;
-
+    private String createTime;
 }

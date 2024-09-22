@@ -1,7 +1,7 @@
 package com.crane.usercenterback.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -20,8 +20,8 @@ import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.crane.usercenterback.constant.UserConstant.MANAGER_STATUS;
 import static com.crane.usercenterback.constant.UserConstant.USER_LOGIN_STATUS;
@@ -39,7 +39,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private UserMapper userMapper;
 
-
     /**
      * TODO：用户名应该是英文名才对，现在中文是允许通过的
      *
@@ -51,7 +50,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String username = userDto.getUsername();
         String password = userDto.getPassword();
         String checkPassword = userDto.getCheckPassword();
-        String nickName = userDto.getNickName();
+        String nickName = userDto.getNickname();
         Integer gender = userDto.getGender();
 
         //判空处理
@@ -87,7 +86,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         User user = new User();
         user.setUsername(username);
-        user.setNickName(StringUtils.isBlank(nickName) ? username : nickName);
+        user.setNickname(StringUtils.isBlank(nickName) ? username : nickName);
         //加密
         user.setUserPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
         user.setGender(gender);
@@ -99,7 +98,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "用户新增失败");
         }
         log.info("注册成功");
-        return user.getId();
+        return user.getUserId();
     }
 
     @Override
@@ -144,7 +143,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         //用户鉴权，这里重新查询一次用户信息以保证数据实效性
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("id", user.getId());
+        userQueryWrapper.eq("id", user.getUserId());
         user = userMapper.selectOne(userQueryWrapper);
         if (!Objects.equals(user.getUserRole(), MANAGER_STATUS)) {
             log.warn("该用户未具有管理员权限");
@@ -167,14 +166,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public User userCurrent(HttpSession session) {
+    public UserVo userCurrent(HttpSession session) {
         User user = (User) session.getAttribute(USER_LOGIN_STATUS);
         if (user == null) {
             throw new BusinessException(ErrorStatus.NO_LOGIN, "请先登录");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", user.getId());
-        return getSafeUser(userMapper.selectOne(queryWrapper));
+        queryWrapper.eq("user_id", user.getUserId());
+        return user2Vo(userMapper.selectOne(queryWrapper));
     }
 
     /**
@@ -188,9 +187,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorStatus.NULL_ERROR, "脱敏的源用户为空");
         }
         User safeUser = new User();
-        safeUser.setId(user.getId());
+        safeUser.setUserId(user.getUserId());
         safeUser.setUsername(user.getUsername());
-        safeUser.setNickName(user.getNickName());
+        safeUser.setNickname(user.getNickname());
         safeUser.setAvatarUrl(user.getAvatarUrl());
         safeUser.setGender(user.getGender());
         safeUser.setUserStatus(user.getUserStatus());
@@ -212,53 +211,56 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public List<UserVo> userQueryByTags(List<String> tagNamesList, boolean isAnd) {
+    public List<UserVo> userQueryByTags(List<String> tagNamesList, boolean isAnd, HttpSession session) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.notIn("user_id", userCurrent(session).getUserId());
         if (isAnd) {
-            tagNamesList.forEach(tag -> queryWrapper.like("tags", tag));
+            queryWrapper.and(sub -> tagNamesList.forEach(tag -> sub.like("tags", tag)));
         } else {
-            tagNamesList.forEach(tag -> queryWrapper.or(innerWrapper -> innerWrapper.like("tags", tag)));
+            queryWrapper.and(sub -> tagNamesList.forEach(tag -> sub.or(innerWrapper -> innerWrapper.like("tags", tag))));
         }
 
         //将user转换为userVo
         List<UserVo> resultList = new ArrayList<>();
-        userMapper.selectList(queryWrapper).forEach(e -> {
-            UserVo userVo = new UserVo();
-            userVo.setAvatarUrl(e.getAvatarUrl());
-            userVo.setGender(e.getGender());
-            userVo.setId(e.getId());
-            userVo.setIntroduction(e.getIntroduction());
-            userVo.setNickName(e.getNickName());
-            userVo.setUserRole(e.getUserRole());
-            userVo.setUserStatus(e.getUserStatus());
-            userVo.setUsername(e.getUsername());
-            userVo.setTags(JSONUtil.parseArray(e.getTags()).toList(String.class));
-            resultList.add(userVo);
-        });
-
+        userMapper.selectList(queryWrapper).forEach(e -> resultList.add(user2Vo(e)));
         return resultList;
     }
 
     /**
      * 修改用户，只有管理员和用户自己能够修改
      *
-     * @param user
-     * @param loginUser
-     * @return
+     * @param user      要修改的用户
+     * @param loginUser 登录用户
+     * @return 返回是否成功
      */
     @Override
     public boolean updateUser(User user, User loginUser) {
-        Long id = user.getId();
-        if (id < 0) {
+        Long id = user.getUserId();
+        if (id == null || id < 0) {
             throw new BusinessException(ErrorStatus.PARAM_ERROR, "ID错误");
         }
         //如果进来的用户不是管理员或者不是用户自己就抛出异常
-        if (!isAdmin(loginUser) && !Objects.equals(id, loginUser.getId())) {
+        if (!isAdmin(loginUser) && !Objects.equals(id, loginUser.getUserId())) {
             throw new BusinessException(ErrorStatus.NO_AUTHORITY, "无权修改");
         }
         User updatedUser = userMapper.selectById(id);
         if (updatedUser == null) {
             throw new BusinessException(ErrorStatus.USER_NULL);
+        }
+        if (StrUtil.isNotBlank(user.getAvatarUrl())) {
+            updatedUser.setAvatarUrl(user.getAvatarUrl());
+        }
+        if (StrUtil.isNotBlank(user.getNickname())) {
+            updatedUser.setNickname(user.getNickname());
+        }
+        if (StrUtil.isNotBlank(user.getIntroduction())) {
+            updatedUser.setIntroduction(user.getIntroduction());
+        }
+        if (user.getGender() != null) {
+            updatedUser.setGender(user.getGender());
+        }
+        if (StrUtil.isNotBlank(user.getTags())) {
+            updatedUser.setTags(user.getTags());
         }
         return userMapper.updateById(updatedUser) == 1;
     }
@@ -271,6 +273,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      */
     private boolean isAdmin(User user) {
         return user != null && Objects.equals(user.getUserRole(), MANAGER_STATUS);
+    }
+
+    /**
+     * 传入user返回vo
+     *
+     * @param user
+     * @Author Crane Resigned
+     * @Date 21/09/2024 13:26
+     **/
+    private UserVo user2Vo(User user) {
+        UserVo userVo = new UserVo();
+        userVo.setAvatarUrl(user.getAvatarUrl());
+        Integer gender = user.getGender();
+        userVo.setGender(gender);
+        userVo.setUserId(user.getUserId());
+        userVo.setIntroduction(user.getIntroduction());
+        userVo.setNickname(user.getNickname());
+        String tags = user.getTags();
+        if (StrUtil.isNotBlank(tags)) {
+            userVo.setTags(JSONUtil.parseArray(tags).toList(String.class));
+        }
+        userVo.setUserRole(user.getUserRole());
+        userVo.setUserStatus(user.getUserStatus());
+        userVo.setUsername(user.getUsername());
+        userVo.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(user.getCreateTime()));
+        return userVo;
     }
 
 }

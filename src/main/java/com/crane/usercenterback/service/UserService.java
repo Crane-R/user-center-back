@@ -47,7 +47,7 @@ public interface UserService extends IService<User> {
      * @Author CraneResigned
      * @Date 2024/7/13 18:56:46
      */
-    User userCurrent(HttpSession session);
+    UserVo userCurrent(HttpSession session);
 
     /**
      * 用户注销
@@ -71,7 +71,7 @@ public interface UserService extends IService<User> {
      * @Author CraneResigned
      * @Date 2024/7/21 15:27:26
      */
-    List<UserVo> userQueryByTags(List<String> tagNamesList, boolean isAnd);
+    List<UserVo> userQueryByTags(List<String> tagNamesList, boolean isAnd,HttpSession session);
 
     /**
      * 修改用户

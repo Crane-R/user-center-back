@@ -19,7 +19,7 @@ public class UserDto {
     /**
      * 用户昵称
      */
-    private String nickName;
+    private String nickname;
 
     /**
      * 用户密码

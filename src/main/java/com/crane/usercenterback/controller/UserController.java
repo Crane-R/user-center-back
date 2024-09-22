@@ -3,6 +3,7 @@ package com.crane.usercenterback.controller;
 import cn.hutool.core.text.CharSequenceUtil;
 import com.crane.usercenterback.common.ErrorStatus;
 import com.crane.usercenterback.exception.BusinessException;
+import com.crane.usercenterback.mapper.UserMapper;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
 import com.crane.usercenterback.model.domain.UserVo;
@@ -33,6 +34,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @GetMapping("/test")
     public String test() {
@@ -78,7 +82,7 @@ public class UserController {
      * @Date 2024/7/14 14:01:13
      */
     @GetMapping("/current")
-    public GeneralResponse<User> userCurrent(HttpSession session) {
+    public GeneralResponse<UserVo> userCurrent(HttpSession session) {
         return R.ok(userService.userCurrent(session));
     }
 
@@ -118,12 +122,12 @@ public class UserController {
      * @Date 2024/7/21 15:48:59
      */
     @GetMapping("/userQueryByTags")
-    public GeneralResponse<List<UserVo>> userQueryByTags(String tagNames, Boolean isAnd) {
+    public GeneralResponse<List<UserVo>> userQueryByTags(String tagNames, Boolean isAnd, HttpSession session) {
         if (CharSequenceUtil.isBlank(tagNames)) {
             throw new BusinessException(ErrorStatus.PARAM_ERROR, "标签不能为空");
         }
         String[] split = tagNames.split(",");
-        return R.ok(userService.userQueryByTags(Arrays.asList(split), isAnd));
+        return R.ok(userService.userQueryByTags(Arrays.asList(split), isAnd,session));
     }
 
     @PostMapping("/update")
@@ -131,7 +135,7 @@ public class UserController {
         if (user == null) {
             throw new BusinessException(ErrorStatus.PARAM_ERROR, "修改的用户不能为空");
         }
-        User loginUser = userCurrent(session).getData();
+        User loginUser = userMapper.selectById(userCurrent(session).getData().getUserId());
         if (loginUser == null) {
             throw new BusinessException(ErrorStatus.NO_LOGIN);
         }
