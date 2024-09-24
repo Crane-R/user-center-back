@@ -1,5 +1,6 @@
 package com.crane.usercenterback.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
@@ -71,14 +72,17 @@ public interface UserService extends IService<User> {
      * @Author CraneResigned
      * @Date 2024/7/21 15:27:26
      */
-    List<UserVo> userQueryByTags(List<String> tagNamesList, boolean isAnd,HttpSession session);
+    List<UserVo> userQueryByTags(List<String> tagNamesList, boolean isAnd, HttpSession session);
 
     /**
      * 修改用户
+     *
      * @param user
      * @param loginUser
      * @return
      */
     boolean updateUser(User user, User loginUser);
+
+    Page<UserVo> usersRecommend(long pageSize, long pageNum, HttpServletRequest request);
 
 }

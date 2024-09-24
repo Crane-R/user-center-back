@@ -1,20 +1,29 @@
 package com.crane.usercenterback.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.crane.usercenterback.common.ErrorStatus;
+import com.crane.usercenterback.common.R;
+import com.crane.usercenterback.constant.Constants;
+import com.crane.usercenterback.constant.RedisConstants;
 import com.crane.usercenterback.exception.BusinessException;
+import com.crane.usercenterback.mapper.UserIndexMapper;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
+import com.crane.usercenterback.model.domain.UserIndex;
 import com.crane.usercenterback.model.domain.UserVo;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -22,6 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static com.crane.usercenterback.constant.UserConstant.MANAGER_STATUS;
 import static com.crane.usercenterback.constant.UserConstant.USER_LOGIN_STATUS;
@@ -38,6 +49,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private UserIndexMapper userIndexMapper;
 
     /**
      * TODO：用户名应该是英文名才对，现在中文是允许通过的
@@ -112,16 +129,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             log.error("用户名含有特殊字符");
             throw new BusinessException(ErrorStatus.PARAM_ERROR, "用户名含有特殊字符");
         }
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", username);
-        queryWrapper.eq("user_password", DigestUtils.md5DigestAsHex(password.getBytes()));
-        User user = userMapper.selectOne(queryWrapper);
+
+        //这里做一个缓存预热，如果redis中已经存在该用户，则直接匹配返回
+        String redisKey = String.format(RedisConstants.LOGIN_KEY_TEMPLATE, username);
+        ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
+        User user = (User) opsForValue.get(redisKey);
+        //如果不为空则说明缓存预热命中
         if (user == null) {
-            log.error("用户名不存在");
-            throw new BusinessException(ErrorStatus.USER_NULL, "用户名或密码错误");
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("username", username);
+            queryWrapper.eq("user_password", DigestUtils.md5DigestAsHex(password.getBytes()));
+            user = userMapper.selectOne(queryWrapper);
+            if (user == null) {
+                log.error("用户名不存在");
+                throw new BusinessException(ErrorStatus.USER_NULL, "用户名或密码错误");
+            }
         }
+
         User safeUser = getSafeUser(user);
         request.getSession().setAttribute(USER_LOGIN_STATUS, safeUser);
+
+        //异步执行
+        User finalUser = user;
+        CompletableFuture.runAsync(() -> {
+            //用户索引+1
+            QueryWrapper<UserIndex> userIndexQueryWrapper = new QueryWrapper<>();
+            userIndexQueryWrapper.eq("u_id", finalUser.getUserId());
+            UserIndex userIndex = userIndexMapper.selectOne(userIndexQueryWrapper);
+            if (userIndex == null) {
+                userIndex = new UserIndex();
+                userIndex.setUiCount(1);
+                userIndex.setUId(finalUser.getUserId());
+                userIndexMapper.insert(userIndex);
+            } else {
+                Integer uiCount = userIndex.getUiCount();
+                userIndex.setUiCount((uiCount >= Constants.MAX_UI_COUNT ? uiCount / 2 : uiCount) + 1);
+                userIndexMapper.updateById(userIndex);
+            }
+        });
+
         log.info("登录成功");
         return safeUser;
     }
@@ -266,6 +312,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
+     * 进入首页时，第一次肯定要查数据库的，后续就可以返回缓存了
+     *
+     * @param pageSize
+     * @param pageNum
+     * @param request
+     * @Author CraneResigned
+     * @Date 24/09/2024 13:14
+     **/
+    @Override
+    public Page<UserVo> usersRecommend(long pageSize, long pageNum, HttpServletRequest request) {
+        UserVo currentUserVo = userCurrent(request.getSession());
+        String redisKey = String.format("match:user:recommend:%s", currentUserVo.getUserId());
+        ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
+        Page<UserVo> userVoPage = (Page<UserVo>) opsForValue.get(redisKey);
+        if (userVoPage != null) {
+            return userVoPage;
+        }
+        //查询数据库
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        Page<User> page = super.page(new Page<>(pageNum, pageSize), queryWrapper);
+
+        Page<UserVo> pageVo = new Page<>();
+        BeanUtil.copyProperties(page, pageVo);
+        //将pageVo里面的user转换为userVo
+        List<UserVo> userVoList = new ArrayList<>();
+        page.getRecords().forEach(user -> userVoList.add(user2Vo(user)));
+        pageVo.setRecords(userVoList);
+        opsForValue.set(redisKey, pageVo, 30, TimeUnit.MINUTES);
+        return pageVo;
+    }
+
+    /**
      * 判断某个用户是否是管理员
      *
      * @param user
@@ -300,6 +378,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         userVo.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(user.getCreateTime()));
         return userVo;
     }
+
 
 }
 

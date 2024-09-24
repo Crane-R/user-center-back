@@ -1,6 +1,8 @@
 package com.crane.usercenterback.controller;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.crane.usercenterback.common.ErrorStatus;
 import com.crane.usercenterback.exception.BusinessException;
 import com.crane.usercenterback.mapper.UserMapper;
@@ -14,6 +16,8 @@ import com.crane.usercenterback.common.R;
 import com.sun.org.apache.xpath.internal.objects.XNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +41,8 @@ public class UserController {
 
     @Autowired
     private UserMapper userMapper;
+
+    private RedisTemplate<String, Object> redisTemplate;
 
     @GetMapping("/test")
     public String test() {
@@ -127,7 +133,7 @@ public class UserController {
             throw new BusinessException(ErrorStatus.PARAM_ERROR, "标签不能为空");
         }
         String[] split = tagNames.split(",");
-        return R.ok(userService.userQueryByTags(Arrays.asList(split), isAnd,session));
+        return R.ok(userService.userQueryByTags(Arrays.asList(split), isAnd, session));
     }
 
     @PostMapping("/update")
@@ -140,6 +146,20 @@ public class UserController {
             throw new BusinessException(ErrorStatus.NO_LOGIN);
         }
         return R.ok(userService.updateUser(user, loginUser), "用户已经被修改");
+    }
+
+    /**
+     * 用户推荐首页
+     *
+     * @param pageSize 页尺寸
+     * @param pageNum  页码
+     * @param request
+     * @Author CraneResigned
+     * @Date 24/09/2024 13:13
+     **/
+    @GetMapping("/usersRecommend")
+    public GeneralResponse<Page<UserVo>> usersRecommend(long pageSize, long pageNum, HttpServletRequest request) {
+        return R.ok(userService.usersRecommend(pageSize, pageNum, request));
     }
 
 }
