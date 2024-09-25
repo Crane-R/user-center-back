@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.crane.usercenterback.mapper.UserIndexMapper">
+
+    <resultMap id="BaseResultMap" type="com.crane.usercenterback.model.domain.UserIndex">
+            <id property="uiId" column="ui_id" jdbcType="BIGINT"/>
+            <result property="uId" column="u_id" jdbcType="BIGINT"/>
+            <result property="uiCount" column="ui_count" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ui_id,u_id,ui_count
+    </sql>
+</mapper>
