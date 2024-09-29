@@ -17,4 +17,12 @@ public interface Constants {
      **/
     int MAX_UI_COUNT = 1000;
 
+    /**
+     * 首页推荐一页的数量
+     *
+     * @Author CraneResigned
+     * @Date 2024/9/25 17:16
+     **/
+    int INDEX_PAGE_SIZE = 8;
+
 }

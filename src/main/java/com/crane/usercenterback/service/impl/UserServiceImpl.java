@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.crane.usercenterback.common.ErrorStatus;
-import com.crane.usercenterback.common.R;
 import com.crane.usercenterback.constant.Constants;
 import com.crane.usercenterback.constant.RedisConstants;
 import com.crane.usercenterback.exception.BusinessException;
@@ -131,7 +130,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         //这里做一个缓存预热，如果redis中已经存在该用户，则直接匹配返回
-        String redisKey = String.format(RedisConstants.LOGIN_KEY_TEMPLATE, username);
+        String redisKey = String.format(RedisConstants.LOGIN_USER, username);
         ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
         User user = (User) opsForValue.get(redisKey);
         //如果不为空则说明缓存预热命中
@@ -144,6 +143,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 log.error("用户名不存在");
                 throw new BusinessException(ErrorStatus.USER_NULL, "用户名或密码错误");
             }
+            log.info("缓存未命中");
+            //加入缓存，过期时间半小时
+            opsForValue.set(redisKey, user, 30, TimeUnit.MINUTES);
         }
 
         User safeUser = getSafeUser(user);
@@ -323,7 +325,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public Page<UserVo> usersRecommend(long pageSize, long pageNum, HttpServletRequest request) {
         UserVo currentUserVo = userCurrent(request.getSession());
-        String redisKey = String.format("match:user:recommend:%s", currentUserVo.getUserId());
+        String redisKey = String.format(RedisConstants.USER_RECOMMEND, currentUserVo.getUserId());
         ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
         Page<UserVo> userVoPage = (Page<UserVo>) opsForValue.get(redisKey);
         if (userVoPage != null) {
@@ -331,15 +333,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         //查询数据库
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        //todo:该queryWrapper需要增加对用户的推荐算法
         Page<User> page = super.page(new Page<>(pageNum, pageSize), queryWrapper);
 
+        Page<UserVo> pageVo = userPage2UserVoPage(page);
+        opsForValue.set(redisKey, pageVo, 30, TimeUnit.MINUTES);
+        return pageVo;
+    }
+
+    public static Page<UserVo> userPage2UserVoPage(Page<User> userPage) {
         Page<UserVo> pageVo = new Page<>();
-        BeanUtil.copyProperties(page, pageVo);
+        BeanUtil.copyProperties(userPage, pageVo);
         //将pageVo里面的user转换为userVo
         List<UserVo> userVoList = new ArrayList<>();
-        page.getRecords().forEach(user -> userVoList.add(user2Vo(user)));
+        userPage.getRecords().forEach(user -> userVoList.add(user2Vo(user)));
         pageVo.setRecords(userVoList);
-        opsForValue.set(redisKey, pageVo, 30, TimeUnit.MINUTES);
         return pageVo;
     }
 
@@ -360,7 +368,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @Author Crane Resigned
      * @Date 21/09/2024 13:26
      **/
-    private UserVo user2Vo(User user) {
+    private static UserVo user2Vo(User user) {
         UserVo userVo = new UserVo();
         userVo.setAvatarUrl(user.getAvatarUrl());
         Integer gender = user.getGender();
