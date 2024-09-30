@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.crane.usercenterback.mapper.TeamMapper">
+
+    <resultMap id="BaseResultMap" type="com.crane.usercenterback.model.domain.Team">
+            <id property="tId" column="t_id" jdbcType="BIGINT"/>
+            <result property="tCode" column="t_code" jdbcType="VARCHAR"/>
+            <result property="tName" column="t_name" jdbcType="VARCHAR"/>
+            <result property="tDescription" column="t_description" jdbcType="VARCHAR"/>
+            <result property="tMaxNum" column="t_max_num" jdbcType="INTEGER"/>
+            <result property="expiretime" column="expireTime" jdbcType="TIMESTAMP"/>
+            <result property="tCaptainUId" column="t_captain_u_id" jdbcType="BIGINT"/>
+            <result property="tIsPublic" column="t_is_public" jdbcType="INTEGER"/>
+            <result property="tPassword" column="t_password" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        t_id,t_code,t_name,
+        t_description,t_max_num,expireTime,
+        t_captain_u_id,t_is_public,t_password,
+        create_time,update_time,is_delete
+    </sql>
+</mapper>
