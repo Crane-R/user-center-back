@@ -10,4 +10,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface UserTeamService extends IService<UserTeam> {
 
+      Boolean userTeamAdd(UserTeam userTeam);
+
 }

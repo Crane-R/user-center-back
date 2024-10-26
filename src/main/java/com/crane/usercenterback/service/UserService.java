@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
-import com.crane.usercenterback.model.domain.UserVo;
+import com.crane.usercenterback.model.domain.vo.UserVo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;

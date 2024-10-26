@@ -1,4 +1,4 @@
-package com.crane.usercenterback.model.domain;
+package com.crane.usercenterback.model.domain.vo;
 
 import lombok.Data;
 

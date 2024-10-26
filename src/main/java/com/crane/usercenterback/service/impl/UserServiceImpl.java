@@ -15,7 +15,7 @@ import com.crane.usercenterback.mapper.UserIndexMapper;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
 import com.crane.usercenterback.model.domain.UserIndex;
-import com.crane.usercenterback.model.domain.UserVo;
+import com.crane.usercenterback.model.domain.vo.UserVo;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,5 @@
 package com.crane.usercenterback.common;
 
-import com.sun.org.apache.xpath.internal.objects.XNull;
 import lombok.Data;
 
 /**
@@ -12,7 +11,7 @@ import lombok.Data;
 @Data
 public final class R {
 
-    public static GeneralResponse<XNull> ok(String description) {
+    public static GeneralResponse ok(String description) {
         return new GeneralResponse<>(SuccessStatus.SUCCESS.getCode(), null, SuccessStatus.SUCCESS.getMessage(), description);
     }
 
@@ -24,7 +23,7 @@ public final class R {
         return new GeneralResponse<>(SuccessStatus.SUCCESS.getCode(), data, SuccessStatus.SUCCESS.getMessage(), description);
     }
 
-    public static GeneralResponse<XNull> error(ErrorStatus status, String description) {
+    public static GeneralResponse error(ErrorStatus status, String description) {
         return new GeneralResponse<>(status.getCode(), null, status.getMessage(), description);
     }
 

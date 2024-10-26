@@ -1,4 +1,4 @@
-package com.crane.usercenterback.model.request;
+package com.crane.usercenterback.model.dto;
 
 import lombok.Data;
 

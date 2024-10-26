@@ -1,23 +1,21 @@
 package com.crane.usercenterback.controller;
 
 import cn.hutool.core.text.CharSequenceUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.crane.usercenterback.common.ErrorStatus;
 import com.crane.usercenterback.exception.BusinessException;
 import com.crane.usercenterback.mapper.UserMapper;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserDto;
-import com.crane.usercenterback.model.domain.UserVo;
-import com.crane.usercenterback.model.request.UserLoginRequest;
+import com.crane.usercenterback.model.domain.vo.UserVo;
+import com.crane.usercenterback.model.dto.UserLoginRequest;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.common.GeneralResponse;
 import com.crane.usercenterback.common.R;
-import com.sun.org.apache.xpath.internal.objects.XNull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -99,7 +97,7 @@ public class UserController {
      * @Date 2024/7/17 13:29:57
      */
     @PostMapping("/logout")
-    public GeneralResponse<XNull> userLogout(HttpSession session) {
+    public GeneralResponse userLogout(HttpSession session) {
         userService.userLogout(session);
         return R.ok("用户已注销");
     }

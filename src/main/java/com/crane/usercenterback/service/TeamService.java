@@ -1,7 +1,14 @@
 package com.crane.usercenterback.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.crane.usercenterback.model.domain.Team;
+import com.crane.usercenterback.model.dto.PageDto;
+import com.crane.usercenterback.model.dto.TeamAddDto;
+import com.crane.usercenterback.model.dto.TeamQuery;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 
 /**
@@ -10,5 +17,17 @@ import com.crane.usercenterback.model.domain.Team;
 * @createDate 2024-09-29 18:50:05
 */
 public interface TeamService extends IService<Team> {
+
+     Team teamAdd(TeamAddDto teamAddDto, HttpServletRequest request);
+
+     Team teamDelete(Long id);
+
+     Team teamUpdate(Team team);
+
+     List<Team> teamList();
+
+     Team selectById(Long id);
+
+     Page<Team> teamPage(TeamQuery teamQuery);
 
 }

@@ -9,7 +9,7 @@ import com.crane.usercenterback.mapper.UserIndexMapper;
 import com.crane.usercenterback.mapper.UserMapper;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserIndex;
-import com.crane.usercenterback.model.domain.UserVo;
+import com.crane.usercenterback.model.domain.vo.UserVo;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.service.impl.UserServiceImpl;
 import lombok.SneakyThrows;
@@ -56,6 +56,7 @@ public class CacheWarmer implements ApplicationListener<ContextRefreshedEvent> {
     /**
      * 缓存预热方法，
      * 在多个服务的情况下只有一个服务能够执行此方法
+     * 分布式锁
      *
      * @Author CraneResigned
      * @Date 2024/9/29 12:44

@@ -34,7 +34,6 @@ mybatis-plus:
       logic-not-delete-value: 0
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
 knife4j:
   enable: true
   setting:
