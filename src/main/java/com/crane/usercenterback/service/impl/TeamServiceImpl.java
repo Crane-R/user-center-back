@@ -58,6 +58,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         team.setTDescription(teamAddDto.getDescription());
         team.setTMaxNum(teamAddDto.getMaxNum());
         //todo:这里过期时间是要优化处理的
+
         team.setExpiretime(teamAddDto.getExpireTime() == null ? new Date() : teamAddDto.getExpireTime());
         team.setTCaptainUId(userId);
         team.setTIsPublic(teamAddDto.getIsPublic());
