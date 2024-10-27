@@ -2,6 +2,7 @@ package com.crane.usercenterback.controller;
 
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.RandomUtil;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +87,7 @@ public class TestController {
 
     private User getNewUser() {
         User user = new User();
-        String name = UUID.randomUUID().toString();
+        String name = "user" + RandomUtil.randomString(6);
         user.setUsername(name);
         user.setNickname(name);
         user.setAvatarUrl("https://img.zcool.cn/community/01c13956d1bf7132f875520feb6244.jpg@2o.jpg");
