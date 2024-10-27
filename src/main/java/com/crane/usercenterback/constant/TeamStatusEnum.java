@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 队伍常量
+ * 队伍状态枚举
  *
  * @Date 2024/10/27 17:59
  * @Author Crane Resigned
@@ -22,7 +22,9 @@ public enum TeamStatusEnum {
      * @author CraneResigned
      * @date 2024/10/27 18:01
      **/
-    PRIVATE(1, "私有");
+    PRIVATE(1, "私有"),
+
+    ENCRYPT(2, "加密");
 
     private final Integer code;
 

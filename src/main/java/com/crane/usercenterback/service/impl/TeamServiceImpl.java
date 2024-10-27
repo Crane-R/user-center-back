@@ -3,6 +3,7 @@ package com.crane.usercenterback.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.crane.usercenterback.common.ErrorStatus;
@@ -13,10 +14,7 @@ import com.crane.usercenterback.mapper.UserMapper;
 import com.crane.usercenterback.model.domain.Team;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserTeam;
-import com.crane.usercenterback.model.dto.PageDto;
-import com.crane.usercenterback.model.dto.TeamAddDto;
-import com.crane.usercenterback.model.dto.TeamQuery;
-import com.crane.usercenterback.model.dto.TeamUpdateDto;
+import com.crane.usercenterback.model.dto.*;
 import com.crane.usercenterback.service.TeamService;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.service.UserTeamService;
@@ -76,11 +74,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "添加失败");
         }
         //加入关系表
-        UserTeam userTeam = new UserTeam();
-        userTeam.setUId(userId);
-        userTeam.setTId(team.getTId());
-        userTeam.setJoinTime(new Date());
-        if (!userTeamService.userTeamAdd(userTeam)) {
+        UserTeamAddDto userTeamAddDto = new UserTeamAddDto();
+        userTeamAddDto.setUserId(userId);
+        userTeamAddDto.setTeamId(team.getTId());
+        userTeamAddDto.setJoinTime(new Date());
+        if (!userTeamService.userTeamAdd(userTeamAddDto)) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "添加用户队伍关系失败");
         }
         return team;
@@ -115,6 +113,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "修改失败");
         }
         return teamMapper.selectById(updateTeam.getTId());
+    }
+
+    @Override
+    public Team teamUpdateTimeOnly(Long teamId) {
+        TeamUpdateDto originTeamUpdateDto = new TeamUpdateDto();
+        originTeamUpdateDto.setTeamId(teamId);
+        return teamUpdate(originTeamUpdateDto);
     }
 
     /**
@@ -184,8 +189,44 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     public Page<Team> teamPage(TeamQuery teamQuery) {
         NullPointUtil.checkNullPoint(teamQuery);
         Page<Team> page = new Page<>(teamQuery.getPageNum(), teamQuery.getPageSize());
-        return this.page(page);
+        return this.page(page, getTeamQueryWrapper(teamQuery));
     }
+
+    /**
+     * 获取查询的QueryWrapper封装体
+     *
+     * @author CraneResigned
+     * @date 2024/10/27 18:20
+     **/
+    private QueryWrapper<Team> getTeamQueryWrapper(TeamQuery teamQuery) {
+        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
+        String code = teamQuery.getCode();
+        String name = teamQuery.getName();
+        String description = teamQuery.getDescription();
+        Integer maxNum = teamQuery.getMaxNum();
+        Long captainId = teamQuery.getCaptainId();
+        Integer isPublic = teamQuery.getIsPublic();
+        if (StrUtil.isNotBlank(code)) {
+            queryWrapper.eq("t_code", code);
+        }
+        if (StrUtil.isNotBlank(name)) {
+            queryWrapper.like("t_name", name);
+        }
+        if (StrUtil.isNotBlank(description)) {
+            queryWrapper.like("t_description", description);
+        }
+        if (maxNum != null) {
+            queryWrapper.eq("t_max_num", maxNum);
+        }
+        if (captainId != null) {
+            queryWrapper.eq("t_captain_id", captainId);
+        }
+        if (isPublic != null) {
+            queryWrapper.eq("t_is_public", isPublic);
+        }
+        return queryWrapper;
+    }
+
 }
 
 

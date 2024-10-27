@@ -2,6 +2,7 @@ package com.crane.usercenterback.service;
 
 import com.crane.usercenterback.model.domain.UserTeam;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.crane.usercenterback.model.dto.UserTeamAddDto;
 
 /**
 * @author Crane Resigned
@@ -10,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface UserTeamService extends IService<UserTeam> {
 
-      Boolean userTeamAdd(UserTeam userTeam);
+      Boolean userTeamAdd(UserTeamAddDto userTeamAddDto);
 
 }

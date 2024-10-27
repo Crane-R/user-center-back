@@ -13,22 +13,24 @@ import java.util.List;
 
 
 /**
-* @author Crane Resigned
-* @description 针对表【team(队伍表)】的数据库操作Service
-* @createDate 2024-09-29 18:50:05
-*/
+ * @author Crane Resigned
+ * @description 针对表【team(队伍表)】的数据库操作Service
+ * @createDate 2024-09-29 18:50:05
+ */
 public interface TeamService extends IService<Team> {
 
-     Team teamAdd(TeamAddDto teamAddDto, HttpServletRequest request);
+    Team teamAdd(TeamAddDto teamAddDto, HttpServletRequest request);
 
-     Team teamDelete(Long id);
+    Team teamDelete(Long id);
 
-     Team teamUpdate(TeamUpdateDto teamUpdateDto);
+    Team teamUpdate(TeamUpdateDto teamUpdateDto);
 
-     List<Team> teamList();
+    Team teamUpdateTimeOnly(Long teamId);
 
-     Team selectById(Long id);
+    List<Team> teamList();
 
-     Page<Team> teamPage(TeamQuery teamQuery);
+    Team selectById(Long id);
+
+    Page<Team> teamPage(TeamQuery teamQuery);
 
 }
