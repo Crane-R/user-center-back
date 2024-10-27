@@ -3,6 +3,7 @@ package com.crane.usercenterback.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -11,9 +12,12 @@ import com.crane.usercenterback.constant.TeamStatusEnum;
 import com.crane.usercenterback.exception.BusinessException;
 import com.crane.usercenterback.mapper.TeamMapper;
 import com.crane.usercenterback.mapper.UserMapper;
+import com.crane.usercenterback.mapper.UserTeamMapper;
 import com.crane.usercenterback.model.domain.Team;
 import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserTeam;
+import com.crane.usercenterback.model.domain.vo.TeamVo;
+import com.crane.usercenterback.model.domain.vo.UserVo;
 import com.crane.usercenterback.model.dto.*;
 import com.crane.usercenterback.service.TeamService;
 import com.crane.usercenterback.service.UserService;
@@ -27,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Crane Resigned
@@ -45,6 +50,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     private final UserTeamService userTeamService;
 
     private final UserMapper userMapper;
+
+    private final UserTeamMapper userTeamMapper;
 
     /**
      * 事务隔离级别读已提交，避免脏读
@@ -190,6 +197,43 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         NullPointUtil.checkNullPoint(teamQuery);
         Page<Team> page = new Page<>(teamQuery.getPageNum(), teamQuery.getPageSize());
         return this.page(page, getTeamQueryWrapper(teamQuery));
+    }
+
+    @Override
+    public TeamVo team2Vo(Team team) {
+        TeamVo teamVo = new TeamVo();
+        teamVo.setTeamId(team.getTId());
+        teamVo.setCode(team.getTCode());
+        teamVo.setName(team.getTName());
+        teamVo.setDescription(team.getTDescription());
+        teamVo.setMaxNum(team.getTMaxNum());
+        teamVo.setExpireTime(team.getExpiretime());
+        teamVo.setCaptainId(team.getTCaptainUId());
+        teamVo.setIsPublic(team.getTIsPublic());
+        teamVo.setCreateTime(team.getCreateTime());
+        teamVo.setUpdateTime(team.getUpdateTime());
+        //搜索users
+        List<UserTeam> userTeams = userTeamMapper.selectList(new QueryWrapper<UserTeam>().eq("t_id", team.getTId()));
+        List<UserVo> userVos = userMapper.selectList(new QueryWrapper<User>().in("user_id", userTeams)).stream()
+                .map(userService::user2Vo).collect(Collectors.toList());
+        teamVo.setUserList(userVos);
+        return teamVo;
+    }
+
+    @Override
+    public Team vo2Team(TeamVo teamVo) {
+        Team team = new Team();
+        team.setTId(teamVo.getTeamId());
+        team.setTCode(teamVo.getCode());
+        team.setTName(teamVo.getName());
+        team.setTDescription(teamVo.getDescription());
+        team.setTMaxNum(teamVo.getMaxNum());
+        team.setExpiretime(teamVo.getExpireTime());
+        team.setTCaptainUId(teamVo.getCaptainId());
+        team.setTIsPublic(teamVo.getIsPublic());
+        team.setCreateTime(teamVo.getCreateTime());
+        team.setUpdateTime(teamVo.getUpdateTime());
+        return team;
     }
 
     /**

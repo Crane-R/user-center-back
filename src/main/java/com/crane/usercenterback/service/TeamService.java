@@ -3,6 +3,7 @@ package com.crane.usercenterback.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.crane.usercenterback.model.domain.Team;
+import com.crane.usercenterback.model.domain.vo.TeamVo;
 import com.crane.usercenterback.model.dto.PageDto;
 import com.crane.usercenterback.model.dto.TeamAddDto;
 import com.crane.usercenterback.model.dto.TeamQuery;
@@ -32,5 +33,9 @@ public interface TeamService extends IService<Team> {
     Team selectById(Long id);
 
     Page<Team> teamPage(TeamQuery teamQuery);
+
+    TeamVo team2Vo(Team team);
+
+    Team vo2Team(TeamVo teamVo);
 
 }

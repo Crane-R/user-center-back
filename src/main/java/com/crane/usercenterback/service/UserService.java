@@ -85,4 +85,10 @@ public interface UserService extends IService<User> {
 
     Page<UserVo> usersRecommend(long pageSize, long pageNum, HttpServletRequest request);
 
+    UserVo user2Vo(User user);
+
+    User vo2User(UserVo userVo);
+
+    Page<UserVo> userPage2UserVoPage(Page<User> userPage);
+
 }

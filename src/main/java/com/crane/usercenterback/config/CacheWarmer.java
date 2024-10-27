@@ -96,7 +96,7 @@ public class CacheWarmer implements ApplicationListener<ContextRefreshedEvent> {
                 //缓存注入推荐
                 QueryWrapper<User> recommendQueryWrapper = new QueryWrapper<>();
                 Page<User> page = userService.page(new Page<>(1, Constants.INDEX_PAGE_SIZE), recommendQueryWrapper);
-                Page<UserVo> userVoPage = UserServiceImpl.userPage2UserVoPage(page);
+                Page<UserVo> userVoPage = userService.userPage2UserVoPage(page);
                 String recommendRedisKey = String.format(RedisConstants.USER_RECOMMEND, u.getUserId());
                 opsForValue.set(recommendRedisKey, userVoPage, 24, TimeUnit.HOURS);
             });

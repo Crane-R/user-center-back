@@ -341,7 +341,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return pageVo;
     }
 
-    public static Page<UserVo> userPage2UserVoPage(Page<User> userPage) {
+    @Override
+    public Page<UserVo> userPage2UserVoPage(Page<User> userPage) {
         Page<UserVo> pageVo = new Page<>();
         BeanUtil.copyProperties(userPage, pageVo);
         //将pageVo里面的user转换为userVo
@@ -368,7 +369,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @Author Crane Resigned
      * @Date 21/09/2024 13:26
      **/
-    private static UserVo user2Vo(User user) {
+    @Override
+    public UserVo user2Vo(User user) {
         UserVo userVo = new UserVo();
         userVo.setAvatarUrl(user.getAvatarUrl());
         Integer gender = user.getGender();
@@ -383,11 +385,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         userVo.setUserRole(user.getUserRole());
         userVo.setUserStatus(user.getUserStatus());
         userVo.setUsername(user.getUsername());
-        userVo.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(user.getCreateTime()));
+        userVo.setCreateTime(user.getCreateTime());
         return userVo;
     }
 
-
+    @Override
+    public User vo2User(UserVo userVo) {
+        User user = new User();
+        user.setUserId(userVo.getUserId());
+        user.setUsername(userVo.getUsername());
+        user.setNickname(userVo.getNickname());
+        user.setAvatarUrl(userVo.getAvatarUrl());
+        user.setIntroduction(userVo.getIntroduction());
+        user.setGender(userVo.getGender());
+        user.setTags(JSONUtil.toJsonStr(userVo.getTags()));
+        user.setUserRole(userVo.getUserRole());
+        user.setUserStatus(userVo.getUserStatus());
+        user.setCreateTime(userVo.getCreateTime());
+        return null;
+    }
 }
 
 

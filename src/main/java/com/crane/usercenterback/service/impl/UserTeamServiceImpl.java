@@ -97,7 +97,10 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "添加失败，加入队伍失败");
         }
         //更新队伍信息
-        teamService.teamUpdateTimeOnly(userTeamAddDto.getTeamId());
+        Team resultTeam = teamService.teamUpdateTimeOnly(userTeamAddDto.getTeamId());
+        if (resultTeam == null) {
+            throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "更新队伍信息失败");
+        }
         return true;
     }
 }

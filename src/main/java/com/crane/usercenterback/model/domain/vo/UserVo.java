@@ -3,6 +3,7 @@ package com.crane.usercenterback.model.domain.vo;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -32,5 +33,5 @@ public class UserVo implements Serializable {
 
     private Integer userStatus;
 
-    private String createTime;
+    private Date createTime;
 }
