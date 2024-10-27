@@ -1,16 +1,22 @@
 package com.crane.usercenterback.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.crane.usercenterback.common.ErrorStatus;
+import com.crane.usercenterback.constant.TeamStatusEnum;
 import com.crane.usercenterback.exception.BusinessException;
 import com.crane.usercenterback.mapper.TeamMapper;
+import com.crane.usercenterback.mapper.UserMapper;
 import com.crane.usercenterback.model.domain.Team;
+import com.crane.usercenterback.model.domain.User;
 import com.crane.usercenterback.model.domain.UserTeam;
 import com.crane.usercenterback.model.dto.PageDto;
 import com.crane.usercenterback.model.dto.TeamAddDto;
 import com.crane.usercenterback.model.dto.TeamQuery;
+import com.crane.usercenterback.model.dto.TeamUpdateDto;
 import com.crane.usercenterback.service.TeamService;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.service.UserTeamService;
@@ -39,6 +45,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     private final UserService userService;
 
     private final UserTeamService userTeamService;
+
+    private final UserMapper userMapper;
 
     /**
      * 事务隔离级别读已提交，避免脏读
@@ -92,12 +100,74 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public Team teamUpdate(Team team) {
-        int i = teamMapper.updateById(team);
+    public Team teamUpdate(TeamUpdateDto teamUpdateDto) {
+        NullPointUtil.checkNullPoint(teamUpdateDto);
+        Team originTeam = teamMapper.selectById(teamUpdateDto.getTeamId());
+        if (originTeam == null) {
+            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队伍不存在");
+        }
+        //todo:校验修改者是管理员或者队长
+
+        //校验参数是否和原来的一样，一样就不修改
+        Team updateTeam = getUpdateTeam(originTeam, teamUpdateDto);
+        int i = teamMapper.updateById(updateTeam);
         if (i != 1) {
             throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "修改失败");
         }
-        return teamMapper.selectById(team.getTId());
+        return teamMapper.selectById(updateTeam.getTId());
+    }
+
+    /**
+     * 校验原队伍信息是否和传入进来的队伍信息一致
+     * 如果一致就不修改，返回要修改的对象
+     *
+     * @author CraneResigned
+     * @date 2024/10/27 17:50
+     **/
+    private Team getUpdateTeam(Team originTeam, TeamUpdateDto teamUpdateDto) {
+        Team updateTeam = new Team();
+        String name = teamUpdateDto.getName();
+        String description = teamUpdateDto.getDescription();
+        Date expireTime = teamUpdateDto.getExpireTime();
+        Integer maxNum = teamUpdateDto.getMaxNum();
+        Integer isPublic = teamUpdateDto.getIsPublic();
+        String password = teamUpdateDto.getPassword();
+        Long captainId = teamUpdateDto.getCaptainId();
+        if (!StrUtil.equals(originTeam.getTName(), name)) {
+            updateTeam.setTName(name);
+        }
+        if (!StrUtil.equals(originTeam.getTDescription(), description)) {
+            updateTeam.setTDescription(description);
+        }
+        Date originTeamExpireTime = originTeam.getExpiretime();
+        if (expireTime != null && !originTeamExpireTime.equals(expireTime) && expireTime.after(DateUtil.date())) {
+            updateTeam.setExpiretime(expireTime);
+        }
+        Integer originMaxNum = originTeam.getTMaxNum();
+        if (!((int) originMaxNum == maxNum) && maxNum > 1) {
+            updateTeam.setTMaxNum(maxNum);
+        }
+        Integer tIsPublic = originTeam.getTIsPublic();
+        //如果原来的是否公开和修改的不相等并且修改的这个值要属于这两个枚举
+        //todo：这样判断的话增加枚举怎么办？先这样把
+        if (!((int) tIsPublic == isPublic)
+                && (isPublic.equals(TeamStatusEnum.PUBLIC.getCode())
+                || isPublic.equals(TeamStatusEnum.PRIVATE.getCode()))) {
+            updateTeam.setTIsPublic(isPublic);
+        }
+        if (!StrUtil.equals(originTeam.getTPassword(), password)) {
+            updateTeam.setTPassword(password);
+        }
+        User user = userMapper.selectById(captainId);
+        if (user == null) {
+            throw new BusinessException(ErrorStatus.NULL_ERROR, "找不到该用户");
+        }
+        if (!captainId.equals(originTeam.getTCaptainUId())) {
+            updateTeam.setTCaptainUId(captainId);
+        }
+        updateTeam.setTId(originTeam.getTId());
+        updateTeam.setUpdateTime(new Date());
+        return updateTeam;
     }
 
     @Override

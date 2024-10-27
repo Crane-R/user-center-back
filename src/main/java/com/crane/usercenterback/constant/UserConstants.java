@@ -1,6 +1,6 @@
 package com.crane.usercenterback.constant;
 
-public interface UserConstant {
+public interface UserConstants {
 
     /**
      * 用户登录态常量

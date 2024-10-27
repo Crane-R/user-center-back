@@ -6,6 +6,7 @@ import com.crane.usercenterback.model.domain.Team;
 import com.crane.usercenterback.model.dto.PageDto;
 import com.crane.usercenterback.model.dto.TeamAddDto;
 import com.crane.usercenterback.model.dto.TeamQuery;
+import com.crane.usercenterback.model.dto.TeamUpdateDto;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -22,7 +23,7 @@ public interface TeamService extends IService<Team> {
 
      Team teamDelete(Long id);
 
-     Team teamUpdate(Team team);
+     Team teamUpdate(TeamUpdateDto teamUpdateDto);
 
      List<Team> teamList();
 

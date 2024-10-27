@@ -6,6 +6,7 @@ import com.crane.usercenterback.common.R;
 import com.crane.usercenterback.model.domain.Team;
 import com.crane.usercenterback.model.dto.TeamAddDto;
 import com.crane.usercenterback.model.dto.TeamQuery;
+import com.crane.usercenterback.model.dto.TeamUpdateDto;
 import com.crane.usercenterback.service.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +38,8 @@ public class TeamController {
     }
 
     @PostMapping("/update")
-    public GeneralResponse<Team> teamUpdate(Team team) {
-        return R.ok(teamService.teamUpdate(team));
+    public GeneralResponse<Team> teamUpdate(@RequestBody TeamUpdateDto teamUpdateDto) {
+        return R.ok(teamService.teamUpdate(teamUpdateDto));
     }
 
     @GetMapping("/list")

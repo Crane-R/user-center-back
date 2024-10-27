@@ -33,8 +33,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static com.crane.usercenterback.constant.UserConstant.MANAGER_STATUS;
-import static com.crane.usercenterback.constant.UserConstant.USER_LOGIN_STATUS;
+import static com.crane.usercenterback.constant.UserConstants.MANAGER_STATUS;
+import static com.crane.usercenterback.constant.UserConstants.USER_LOGIN_STATUS;
 
 /**
  * @author CraneResigned
