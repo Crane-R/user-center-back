@@ -90,7 +90,7 @@ public class TestController {
         String name = "user" + RandomUtil.randomString(6);
         user.setUsername(name);
         user.setNickname(name);
-        user.setAvatarUrl("https://img.zcool.cn/community/01c13956d1bf7132f875520feb6244.jpg@2o.jpg");
+        user.setAvatarUrl("https://www.keaitupian.cn/cjpic/frombd/2/253/1676065055/2828606542.jpg");
         user.setGender(1);
         user.setUserPassword("123456");
         user.setUserStatus(0);

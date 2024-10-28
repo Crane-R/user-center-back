@@ -54,7 +54,7 @@ public class TeamController {
     }
 
     @PostMapping("/page")
-    public GeneralResponse<Page<Team>> teamPage(@RequestBody TeamQuery teamQuery) {
+    public GeneralResponse<Page<TeamVo>> teamPage(@RequestBody TeamQuery teamQuery) {
         return R.ok(teamService.teamPage(teamQuery));
     }
 

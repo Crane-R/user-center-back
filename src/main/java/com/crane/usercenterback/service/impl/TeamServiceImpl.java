@@ -1,5 +1,6 @@
 package com.crane.usercenterback.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,10 +86,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         }
         //加入关系表
         UserTeamAddDto userTeamAddDto = new UserTeamAddDto();
-        userTeamAddDto.setUserId(userId);
         userTeamAddDto.setTeamId(team.getTId());
-        userTeamAddDto.setJoinTime(new Date());
-        if (!userTeamService.userTeamAdd(userTeamAddDto)) {
+        if (!userTeamService.userTeamAdd(userTeamAddDto, request)) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "添加用户队伍关系失败");
         }
         return team2Vo(teamMapper.selectById(team.getTId()));
@@ -195,10 +195,16 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public Page<Team> teamPage(TeamQuery teamQuery) {
+    public Page<TeamVo> teamPage(TeamQuery teamQuery) {
         NullPointUtil.checkNullPoint(teamQuery);
-        Page<Team> page = new Page<>(teamQuery.getPageNum(), teamQuery.getPageSize());
-        return this.page(page, getTeamQueryWrapper(teamQuery));
+        Page<Team> page = super.page(new Page<>(teamQuery.getPageNum(), teamQuery.getPageSize()),
+                getTeamQueryWrapper(teamQuery));
+        Page<TeamVo> teamVoPage = new Page<>();
+        BeanUtil.copyProperties(page, teamVoPage);
+        List<TeamVo> teamVoList = new ArrayList<>();
+        page.getRecords().forEach(team -> teamVoList.add(team2Vo(team)));
+        teamVoPage.setRecords(teamVoList);
+        return teamVoPage;
     }
 
     @Override

@@ -2,8 +2,6 @@ package com.crane.usercenterback.model.dto;
 
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * 用户加入队伍请求体
  *
@@ -13,11 +11,7 @@ import java.util.Date;
 @Data
 public class UserTeamAddDto {
 
-    private Long userId;
-
     private Long teamId;
-
-    private Date joinTime;
 
     private String password;
 

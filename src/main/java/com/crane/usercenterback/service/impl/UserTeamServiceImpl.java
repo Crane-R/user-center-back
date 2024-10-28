@@ -1,5 +1,6 @@
 package com.crane.usercenterback.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.crypto.SecureUtil;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 /**
@@ -39,13 +41,16 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
 
     private final TeamMapper teamMapper;
 
+    private final UserService userService;
+
     @Override
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
-    public Boolean userTeamAdd(UserTeamAddDto userTeamAddDto) {
+    public Boolean userTeamAdd(UserTeamAddDto userTeamAddDto, HttpServletRequest request) {
         NullPointUtil.checkNullPoint(userTeamAddDto);
+        Long userId = userService.userCurrent(request.getSession()).getUserId();
 
         QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("u_id", userTeamAddDto.getUserId());
+        queryWrapper.eq("u_id", userId);
         long count = super.count(queryWrapper);
         if (count >= TeamConstants.MAX_JOIN_NUM) {
             throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "用户加入队伍数量达到上线");
@@ -66,12 +71,12 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
         if (NumberUtil.equals(team.getTIsPublic(), TeamStatusEnum.PRIVATE.getCode())) {
             throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队伍私有不允许加入");
         }
-        if (team.getExpiretime().before(new Date())) {
-            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队伍已过期");
+        if (!team.getExpiretime().after(DateUtil.yesterday())) {
+            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "过期时间不合法");
         }
         //检查队伍队长是不是自己
-        if (team.getTCaptainUId().equals(userTeamAddDto.getUserId()) && teamUsersCount != 0) {
-            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队长id");
+        if (team.getTCaptainUId().equals(userId) && teamUsersCount != 0) {
+            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队长不可重复加入自己队伍");
         }
         //加密
         if (team.getTIsPublic().equals(TeamStatusEnum.ENCRYPT.getCode())
@@ -81,15 +86,15 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
         //加入队伍判重
         QueryWrapper<UserTeam> checkIsJoinWrapper = new QueryWrapper<>();
         checkIsJoinWrapper.eq("t_id", userTeamAddDto.getTeamId());
-        checkIsJoinWrapper.eq("u_id", userTeamAddDto.getUserId());
+        checkIsJoinWrapper.eq("u_id", userId);
         Long l = userTeamMapper.selectCount(checkIsJoinWrapper);
         if (l != 0) {
             throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "你已加入该队伍");
         }
         UserTeam userTeam = new UserTeam();
-        userTeam.setUId(userTeamAddDto.getUserId());
+        userTeam.setUId(userId);
         userTeam.setTId(userTeamAddDto.getTeamId());
-        userTeam.setJoinTime(userTeamAddDto.getJoinTime());
+        userTeam.setJoinTime(new Date());
         int insert = userTeamMapper.insert(userTeam);
         if (insert != 1) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "添加失败，加入队伍失败");

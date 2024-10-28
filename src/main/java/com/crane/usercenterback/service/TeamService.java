@@ -32,7 +32,7 @@ public interface TeamService extends IService<Team> {
 
     Team selectById(Long id);
 
-    Page<Team> teamPage(TeamQuery teamQuery);
+    Page<TeamVo> teamPage(TeamQuery teamQuery);
 
     TeamVo team2Vo(Team team);
 
