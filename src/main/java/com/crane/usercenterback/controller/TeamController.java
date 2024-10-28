@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.crane.usercenterback.common.GeneralResponse;
 import com.crane.usercenterback.common.R;
 import com.crane.usercenterback.model.domain.Team;
+import com.crane.usercenterback.model.domain.vo.TeamVo;
 import com.crane.usercenterback.model.dto.TeamAddDto;
 import com.crane.usercenterback.model.dto.TeamQuery;
 import com.crane.usercenterback.model.dto.TeamUpdateDto;
@@ -28,12 +29,12 @@ public class TeamController {
     private final TeamService teamService;
 
     @PostMapping("/add")
-    public GeneralResponse<Team> teamAdd(@RequestBody TeamAddDto teamAddDto, HttpServletRequest request) {
+    public GeneralResponse<TeamVo> teamAdd(@RequestBody TeamAddDto teamAddDto, HttpServletRequest request) {
         return R.ok(teamService.teamAdd(teamAddDto, request));
     }
 
     @PostMapping("/delete")
-    public GeneralResponse<Team> teamDelete(Long teamId) {
+    public GeneralResponse<Team> teamDelete(@RequestBody Long teamId) {
         return R.ok(teamService.teamDelete(teamId));
     }
 
@@ -55,6 +56,16 @@ public class TeamController {
     @PostMapping("/page")
     public GeneralResponse<Page<Team>> teamPage(@RequestBody TeamQuery teamQuery) {
         return R.ok(teamService.teamPage(teamQuery));
+    }
+
+    @PostMapping("/disband")
+    public GeneralResponse<Boolean> teamDisband(@RequestBody Long teamId, HttpServletRequest request) {
+        return R.ok(teamService.teamDisband(teamId, request));
+    }
+
+    @PostMapping("/quit")
+    public GeneralResponse<TeamVo> teamQuit(@RequestBody Long teamId, HttpServletRequest request) {
+        return R.ok(teamService.teamQuit(teamId, request));
     }
 
 }

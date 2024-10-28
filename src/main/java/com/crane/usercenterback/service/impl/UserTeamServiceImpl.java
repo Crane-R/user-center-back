@@ -39,8 +39,6 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
 
     private final TeamMapper teamMapper;
 
-    private final TeamService teamService;
-
     @Override
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public Boolean userTeamAdd(UserTeamAddDto userTeamAddDto) {
@@ -95,11 +93,6 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
         int insert = userTeamMapper.insert(userTeam);
         if (insert != 1) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "添加失败，加入队伍失败");
-        }
-        //更新队伍信息
-        Team resultTeam = teamService.teamUpdateTimeOnly(userTeamAddDto.getTeamId());
-        if (resultTeam == null) {
-            throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "更新队伍信息失败");
         }
         return true;
     }

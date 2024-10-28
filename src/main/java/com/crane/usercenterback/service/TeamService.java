@@ -20,7 +20,7 @@ import java.util.List;
  */
 public interface TeamService extends IService<Team> {
 
-    Team teamAdd(TeamAddDto teamAddDto, HttpServletRequest request);
+    TeamVo teamAdd(TeamAddDto teamAddDto, HttpServletRequest request);
 
     Team teamDelete(Long id);
 
@@ -37,5 +37,9 @@ public interface TeamService extends IService<Team> {
     TeamVo team2Vo(Team team);
 
     Team vo2Team(TeamVo teamVo);
+
+    Boolean teamDisband(Long teamId, HttpServletRequest request);
+
+    TeamVo teamQuit(Long teamId, HttpServletRequest request);
 
 }

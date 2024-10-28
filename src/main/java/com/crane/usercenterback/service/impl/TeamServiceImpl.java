@@ -1,6 +1,8 @@
 package com.crane.usercenterback.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -62,7 +64,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
      **/
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
-    public Team teamAdd(TeamAddDto teamAddDto, HttpServletRequest request) {
+    public TeamVo teamAdd(TeamAddDto teamAddDto, HttpServletRequest request) {
         NullPointUtil.checkNullPoint("添加队伍的参数不能为空", teamAddDto);
         Long userId = userService.userCurrent(request.getSession()).getUserId();
         Team team = new Team();
@@ -88,7 +90,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (!userTeamService.userTeamAdd(userTeamAddDto)) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "添加用户队伍关系失败");
         }
-        return team;
+        return team2Vo(teamMapper.selectById(team.getTId()));
     }
 
     @Override
@@ -214,9 +216,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         teamVo.setUpdateTime(team.getUpdateTime());
         //搜索users
         List<UserTeam> userTeams = userTeamMapper.selectList(new QueryWrapper<UserTeam>().eq("t_id", team.getTId()));
-        List<UserVo> userVos = userMapper.selectList(new QueryWrapper<User>().in("user_id", userTeams)).stream()
-                .map(userService::user2Vo).collect(Collectors.toList());
-        teamVo.setUserList(userVos);
+        if (CollectionUtil.isNotEmpty(userTeams)) {
+            List<UserVo> userVos = userMapper.selectList(new QueryWrapper<User>().in("user_id", userTeams)).stream()
+                    .map(userService::user2Vo).collect(Collectors.toList());
+            teamVo.setUserList(userVos);
+        }
         return teamVo;
     }
 
@@ -271,6 +275,60 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         return queryWrapper;
     }
 
+    @Override
+    public Boolean teamDisband(Long teamId, HttpServletRequest request) {
+        UserVo userCurrent = userService.userCurrent(request.getSession());
+        Team team = teamMapper.selectById(teamId);
+        if (team == null) {
+            throw new BusinessException(ErrorStatus.PARAM_ERROR, "队伍不存在");
+        }
+        if (!NumberUtil.equals(userCurrent.getUserId(), team.getTCaptainUId())) {
+            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "你无权解散该队伍");
+        }
+        int i = teamMapper.deleteById(teamId);
+        if (i != 1) {
+            throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "删除失败");
+        }
+        userTeamMapper.delete(new QueryWrapper<UserTeam>().eq("t_id", teamId));
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TeamVo teamQuit(Long teamId, HttpServletRequest request) {
+        Team team = teamMapper.selectById(teamId);
+        if (team == null) {
+            throw new BusinessException(ErrorStatus.PARAM_ERROR, "队伍不存在");
+        }
+        Long userId = userService.userCurrent(request.getSession()).getUserId();
+        QueryWrapper<UserTeam> deleteWrapper = new QueryWrapper<>();
+        deleteWrapper.eq("u_id", userId);
+        deleteWrapper.eq("t_id", teamId);
+        int delete = userTeamMapper.delete(deleteWrapper);
+        if (delete != 1) {
+            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "删除失败");
+        }
+        //如果是队长就顺延
+        if (!NumberUtil.equals(userId, team.getTCaptainUId())) {
+            return team2Vo(team);
+        }
+        QueryWrapper<UserTeam> selectCaptainWrapper = new QueryWrapper<>();
+        selectCaptainWrapper.eq("t_id", teamId);
+        selectCaptainWrapper.orderByDesc("join_time");
+        UserTeam userTeam = userTeamMapper.selectOne(selectCaptainWrapper);
+        //队伍已经没人，调用解散
+        if (userTeam == null) {
+            if (!teamDisband(teamId, request)) {
+                throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "解散失败");
+            }
+            return team2Vo(team);
+        }
+        TeamUpdateDto teamUpdateDto = new TeamUpdateDto();
+        teamUpdateDto.setTeamId(teamId);
+        teamUpdateDto.setCaptainId(userTeam.getUId());
+        Team teamUpdate = teamUpdate(teamUpdateDto);
+        return team2Vo(teamUpdate);
+    }
 }
 
 
