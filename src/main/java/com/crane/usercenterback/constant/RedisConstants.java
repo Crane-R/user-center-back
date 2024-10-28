@@ -32,4 +32,12 @@ public interface RedisConstants {
      **/
     String DISTRIBUTED_LOCK = "distributed:lock:cache_warm";
 
+    /**
+     * 心动匹配
+     *
+     * @author CraneResigned
+     * @date 2024/10/28 22:34
+     **/
+    String HEART_MATCH = "match:heart:%s";
+
 }

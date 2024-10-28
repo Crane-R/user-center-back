@@ -21,6 +21,7 @@ import com.crane.usercenterback.model.domain.vo.UserVo;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.mapper.UserMapper;
 import com.crane.usercenterback.utils.AlgorithmUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,17 +48,15 @@ import static com.crane.usercenterback.constant.UserConstants.USER_LOGIN_STATUS;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
-    private UserIndexMapper userIndexMapper;
+    private final UserIndexMapper userIndexMapper;
 
     /**
      * TODO：用户名应该是英文名才对，现在中文是允许通过的
@@ -372,6 +371,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (currentUser == null) {
             throw new BusinessException(ErrorStatus.USER_NULL);
         }
+        Long userId = currentUser.getUserId();
+        String redisKey = String.format(RedisConstants.HEART_MATCH, userId);
+        //如果缓存有就直接走缓存
+        List<UserVo> cacheList = (List<UserVo>) redisTemplate.opsForValue().get(redisKey);
+        if (cacheList != null) {
+            return cacheList;
+        }
+
         //这里是基于大数据查询思想，减少一些不必要的条件
         QueryWrapper<User> userListQueryWrapper = new QueryWrapper<>();
         userListQueryWrapper.select("user_id", "tags");
@@ -386,7 +393,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         for (User tempUser : userList) {
             String tags = tempUser.getTags();
             //无标签或者当前用户为自己就跳过
-            if (StrUtil.isBlank(tags) || Objects.equals(tempUser.getUserId(), currentUser.getUserId())) {
+            if (StrUtil.isBlank(tags) || Objects.equals(tempUser.getUserId(), userId)) {
                 continue;
             }
             //计算分数
@@ -405,10 +412,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //直接in ids这样查顺序会被打乱，只能一个一个查
         List<UserVo> resultList = new ArrayList<>();
         userIdList.forEach(id -> resultList.add(user2Vo(userMapper.selectById(id))));
+        //将结果加入缓存
+        ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
+        opsForValue.set(redisKey, resultList, 30, TimeUnit.MINUTES);
         stopWatch.stop();
         log.info("匹配算法共计耗时{}秒", stopWatch.getTotalTimeSeconds());
         return resultList;
-
     }
 
     /**
