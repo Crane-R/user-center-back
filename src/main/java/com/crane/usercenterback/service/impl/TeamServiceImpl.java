@@ -190,8 +190,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
-    public Team selectById(Long id) {
-        return teamMapper.selectById(id);
+    public TeamVo selectById(Long id) {
+        return team2Vo(teamMapper.selectById(id));
     }
 
     @Override
@@ -269,11 +269,11 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (StrUtil.isNotBlank(description)) {
             queryWrapper.like("t_description", description);
         }
-        if (maxNum != null) {
+        if (maxNum != null && maxNum > 1) {
             queryWrapper.eq("t_max_num", maxNum);
         }
         if (captainId != null) {
-            queryWrapper.eq("t_captain_id", captainId);
+            queryWrapper.eq("t_captain_u_id", captainId);
         }
         if (isPublic != null) {
             queryWrapper.eq("t_is_public", isPublic);
@@ -334,6 +334,15 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         teamUpdateDto.setCaptainId(userTeam.getUId());
         Team teamUpdate = teamUpdate(teamUpdateDto);
         return team2Vo(teamUpdate);
+    }
+
+    @Override
+    public List<TeamVo> teamListUserJoin(HttpServletRequest request) {
+        Long userId = userService.userCurrent(request.getSession()).getUserId();
+        List<Long> teamIds = userTeamMapper.selectList(new QueryWrapper<UserTeam>()
+                .eq("u_id", userId)).stream().map(UserTeam::getTId).collect(Collectors.toList());
+        return teamMapper.selectList(new QueryWrapper<Team>().in("t_id", teamIds))
+                .stream().map(this::team2Vo).collect(Collectors.toList());
     }
 }
 

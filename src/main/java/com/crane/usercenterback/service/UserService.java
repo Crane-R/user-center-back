@@ -91,4 +91,6 @@ public interface UserService extends IService<User> {
 
     Page<UserVo> userPage2UserVoPage(Page<User> userPage);
 
+    List<UserVo> usersMatch(Long num,HttpServletRequest request);
+
 }

@@ -16,7 +16,7 @@ public interface TeamConstants {
      * @author CraneResigned
      * @date 2024/10/27 22:36
      **/
-    Integer MAX_JOIN_NUM = 5;
+    Integer MAX_JOIN_NUM = 50;
 
     /**
      * 队伍最大用户数
@@ -24,6 +24,10 @@ public interface TeamConstants {
      * @author CraneResigned
      * @date 2024/10/27 23:09
      **/
-    Integer MAX_TEAM_USERS = 5;
-    
+    Integer MAX_TEAM_USERS = 50;
+
+    Integer PAGE_SIZE = 8;
+
+    Integer PAGE_NUMBER = 1;
+
 }

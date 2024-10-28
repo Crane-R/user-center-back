@@ -6,9 +6,11 @@ import com.crane.usercenterback.common.R;
 import com.crane.usercenterback.model.domain.Team;
 import com.crane.usercenterback.model.domain.vo.TeamVo;
 import com.crane.usercenterback.model.dto.TeamAddDto;
+import com.crane.usercenterback.model.dto.TeamIdDto;
 import com.crane.usercenterback.model.dto.TeamQuery;
 import com.crane.usercenterback.model.dto.TeamUpdateDto;
 import com.crane.usercenterback.service.TeamService;
+import com.crane.usercenterback.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,8 @@ import java.util.List;
 public class TeamController {
 
     private final TeamService teamService;
+
+    private final UserService userService;
 
     @PostMapping("/add")
     public GeneralResponse<TeamVo> teamAdd(@RequestBody TeamAddDto teamAddDto, HttpServletRequest request) {
@@ -49,7 +53,7 @@ public class TeamController {
     }
 
     @GetMapping("/selectOne")
-    public GeneralResponse<Team> getTeamById(Long teamId) {
+    public GeneralResponse<TeamVo> getTeamById(Long teamId) {
         return R.ok(teamService.selectById(teamId));
     }
 
@@ -59,13 +63,38 @@ public class TeamController {
     }
 
     @PostMapping("/disband")
-    public GeneralResponse<Boolean> teamDisband(@RequestBody Long teamId, HttpServletRequest request) {
-        return R.ok(teamService.teamDisband(teamId, request));
+    public GeneralResponse<Boolean> teamDisband(@RequestBody TeamIdDto teamIdDto, HttpServletRequest request) {
+        return R.ok(teamService.teamDisband(teamIdDto.getTeamId(), request));
     }
 
     @PostMapping("/quit")
-    public GeneralResponse<TeamVo> teamQuit(@RequestBody Long teamId, HttpServletRequest request) {
-        return R.ok(teamService.teamQuit(teamId, request));
+    public GeneralResponse<TeamVo> teamQuit(@RequestBody TeamIdDto teamIdDto, HttpServletRequest request) {
+        return R.ok(teamService.teamQuit(teamIdDto.getTeamId(), request));
+    }
+
+    /**
+     * 获取当前用户创建的队伍
+     *
+     * @author CraneResigned
+     * @date 2024/10/28 14:32
+     **/
+    @GetMapping("/teamListBySelfCreate")
+    public GeneralResponse<Page<TeamVo>> teamListBySelfCreate(HttpServletRequest request) {
+        Long userId = userService.userCurrent(request.getSession()).getUserId();
+        TeamQuery teamQuery = new TeamQuery();
+        teamQuery.setCaptainId(userId);
+        return teamPage(teamQuery);
+    }
+
+    /**
+     * 获取当前用户加入的队伍
+     *
+     * @author CraneResigned
+     * @date 2024/10/28 14:51
+     **/
+    @GetMapping("/teamListUserJoin")
+    public GeneralResponse<List<TeamVo>> teamListUserJoin(HttpServletRequest request) {
+        return R.ok(teamService.teamListUserJoin(request));
     }
 
 }

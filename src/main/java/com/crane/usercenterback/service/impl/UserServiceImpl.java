@@ -1,6 +1,8 @@
 package com.crane.usercenterback.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.StopWatch;
+import cn.hutool.core.lang.Pair;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
@@ -18,6 +20,7 @@ import com.crane.usercenterback.model.domain.UserIndex;
 import com.crane.usercenterback.model.domain.vo.UserVo;
 import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.mapper.UserMapper;
+import com.crane.usercenterback.utils.AlgorithmUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.crane.usercenterback.constant.UserConstants.MANAGER_STATUS;
 import static com.crane.usercenterback.constant.UserConstants.USER_LOGIN_STATUS;
@@ -350,6 +354,61 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         userPage.getRecords().forEach(user -> userVoList.add(user2Vo(user)));
         pageVo.setRecords(userVoList);
         return pageVo;
+    }
+
+    /**
+     * 标签匹配
+     * 这里将百万条数据存储在集合中，然后又存储在优先队列中，即使元素对象只有标签和userid，但也是十分消耗内存的
+     * 两百万22秒左右，需要注意是我的电脑那么快的情况下22秒
+     *
+     * @author CraneResigned
+     * @date 2024/10/28 18:59
+     **/
+    @Override
+    public List<UserVo> usersMatch(Long num, HttpServletRequest request) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        UserVo currentUser = userCurrent(request.getSession());
+        if (currentUser == null) {
+            throw new BusinessException(ErrorStatus.USER_NULL);
+        }
+        //这里是基于大数据查询思想，减少一些不必要的条件
+        QueryWrapper<User> userListQueryWrapper = new QueryWrapper<>();
+        userListQueryWrapper.select("user_id", "tags");
+        userListQueryWrapper.isNotNull("tags");
+        List<User> userList = this.list(userListQueryWrapper);
+        List<String> tagList = currentUser.getTags();
+        /*
+         * key是userid，value是分数，分数越大代表相似度越差，
+         * 优先队列默认按照最小堆存储，那么顶部就是相似度最好的
+         * */
+        PriorityQueue<Pair<Long, Long>> priorityQueue = new PriorityQueue<>((Comparator.comparing(Pair::getValue)));
+        for (User tempUser : userList) {
+            String tags = tempUser.getTags();
+            //无标签或者当前用户为自己就跳过
+            if (StrUtil.isBlank(tags) || Objects.equals(tempUser.getUserId(), currentUser.getUserId())) {
+                continue;
+            }
+            //计算分数
+            long distance = AlgorithmUtil.minDistance(tagList, JSONUtil.parseArray(tags).toList(String.class));
+            priorityQueue.add(new Pair<>(tempUser.getUserId(), distance));
+        }
+        //结束转换
+        //优先队列的最小堆，从顶部开始取，取num个
+        List<Long> userIdList = new ArrayList<>();
+        while (num > 0) {
+            Pair<Long, Long> poll = priorityQueue.poll();
+            assert poll != null;
+            userIdList.add(poll.getKey());
+            num--;
+        }
+        //直接in ids这样查顺序会被打乱，只能一个一个查
+        List<UserVo> resultList = new ArrayList<>();
+        userIdList.forEach(id -> resultList.add(user2Vo(userMapper.selectById(id))));
+        stopWatch.stop();
+        log.info("匹配算法共计耗时{}秒", stopWatch.getTotalTimeSeconds());
+        return resultList;
+
     }
 
     /**

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.crane.usercenterback.model.domain.Team;
 import com.crane.usercenterback.model.domain.vo.TeamVo;
-import com.crane.usercenterback.model.dto.PageDto;
 import com.crane.usercenterback.model.dto.TeamAddDto;
 import com.crane.usercenterback.model.dto.TeamQuery;
 import com.crane.usercenterback.model.dto.TeamUpdateDto;
@@ -30,7 +29,7 @@ public interface TeamService extends IService<Team> {
 
     List<Team> teamList();
 
-    Team selectById(Long id);
+    TeamVo selectById(Long id);
 
     Page<TeamVo> teamPage(TeamQuery teamQuery);
 
@@ -41,5 +40,7 @@ public interface TeamService extends IService<Team> {
     Boolean teamDisband(Long teamId, HttpServletRequest request);
 
     TeamVo teamQuit(Long teamId, HttpServletRequest request);
+
+    List<TeamVo> teamListUserJoin(HttpServletRequest request);
 
 }

@@ -2,6 +2,7 @@ package com.crane.usercenterback.model.dto;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -51,6 +52,5 @@ public class TeamQuery extends PageDto implements Serializable {
      * 是否公开，0公开，1私密
      */
     private Integer isPublic;
-
 
 }

@@ -1,5 +1,6 @@
 package com.crane.usercenterback.model.dto;
 
+import com.crane.usercenterback.constant.TeamConstants;
 import lombok.Data;
 
 /**
@@ -11,8 +12,8 @@ import lombok.Data;
 @Data
 public class PageDto {
 
-    protected int pageSize;
+    protected int pageSize = TeamConstants.PAGE_SIZE;
 
-    protected int pageNum;
+    protected int pageNum = TeamConstants.PAGE_NUMBER;
 
 }

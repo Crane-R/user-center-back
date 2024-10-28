@@ -13,6 +13,7 @@ import com.crane.usercenterback.service.UserService;
 import com.crane.usercenterback.common.GeneralResponse;
 import com.crane.usercenterback.common.R;
 
+import com.crane.usercenterback.utils.NullPointUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -158,6 +159,12 @@ public class UserController {
     @GetMapping("/usersRecommend")
     public GeneralResponse<Page<UserVo>> usersRecommend(long pageSize, long pageNum, HttpServletRequest request) {
         return R.ok(userService.usersRecommend(pageSize, pageNum, request));
+    }
+
+    @GetMapping("/usersMatch")
+    public GeneralResponse<List<UserVo>> usersMatch(Long num, HttpServletRequest request) {
+        NullPointUtil.checkNullPoint(num);
+        return R.ok(userService.usersMatch(num, request));
     }
 
 }

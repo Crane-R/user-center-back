@@ -1,5 +1,6 @@
 package com.crane.usercenterback.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -36,6 +37,7 @@ public class TeamUpdateDto implements Serializable {
     /**
      * 过期时间
      */
+    @JsonFormat(pattern = "yyyy/MM/dd", timezone = "GMT+8")
     private Date expireTime;
 
     /**
