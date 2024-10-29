@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -74,12 +75,12 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         team.setTName(teamAddDto.getName());
         team.setTDescription(teamAddDto.getDescription());
         team.setTMaxNum(teamAddDto.getMaxNum());
-        //todo:这里过期时间是要优化处理的
-
-        team.setExpiretime(teamAddDto.getExpireTime() == null ? new Date() : teamAddDto.getExpireTime());
+        //这里过期时间是要优化处理的，我给个默认过期时间吧
+        team.setExpiretime(teamAddDto.getExpireTime() == null ?
+                DateUtil.tomorrow() : teamAddDto.getExpireTime());
         team.setTCaptainUId(userId);
         team.setTIsPublic(teamAddDto.getIsPublic());
-        team.setTPassword(teamAddDto.getPassword());
+        team.setTPassword(SecureUtil.md5(teamAddDto.getPassword()));
         int inserted = teamMapper.insert(team);
         if (inserted != 1) {
             throw new BusinessException(ErrorStatus.SYSTEM_ERROR, "添加失败");
@@ -215,7 +216,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         teamVo.setName(team.getTName());
         teamVo.setDescription(team.getTDescription());
         teamVo.setMaxNum(team.getTMaxNum());
-        teamVo.setExpireTime(team.getExpiretime());
+        teamVo.setExpireTime(DateUtil.formatDateTime(team.getExpiretime()));
         teamVo.setCaptainId(team.getTCaptainUId());
         teamVo.setIsPublic(team.getTIsPublic());
         teamVo.setCreateTime(team.getCreateTime());
@@ -238,7 +239,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         team.setTName(teamVo.getName());
         team.setTDescription(teamVo.getDescription());
         team.setTMaxNum(teamVo.getMaxNum());
-        team.setExpiretime(teamVo.getExpireTime());
+        team.setExpiretime(DateUtil.parse(teamVo.getExpireTime()));
         team.setTCaptainUId(teamVo.getCaptainId());
         team.setTIsPublic(teamVo.getIsPublic());
         team.setCreateTime(teamVo.getCreateTime());
@@ -259,7 +260,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         String description = teamQuery.getDescription();
         Integer maxNum = teamQuery.getMaxNum();
         Long captainId = teamQuery.getCaptainId();
-        Integer isPublic = teamQuery.getIsPublic();
         if (StrUtil.isNotBlank(code)) {
             queryWrapper.eq("t_code", code);
         }
@@ -275,9 +275,12 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (captainId != null) {
             queryWrapper.eq("t_captain_u_id", captainId);
         }
-        if (isPublic != null) {
-            queryWrapper.eq("t_is_public", isPublic);
-        }
+        //只查询未过期的队伍
+        queryWrapper.ge("expireTime", new Date());
+        //只查询公开和加密的队伍
+        queryWrapper.eq("t_is_public", TeamStatusEnum.PUBLIC.getCode())
+                .or().eq("t_is_public", TeamStatusEnum.ENCRYPT.getCode());
+
         return queryWrapper;
     }
 

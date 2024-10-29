@@ -68,9 +68,9 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
             throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队伍不存在");
         }
         //如果是私有不给加入
-        if (NumberUtil.equals(team.getTIsPublic(), TeamStatusEnum.PRIVATE.getCode())) {
-            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队伍私有不允许加入");
-        }
+//        if (NumberUtil.equals(team.getTIsPublic(), TeamStatusEnum.PRIVATE.getCode())) {
+//            throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队伍私有不允许加入");
+//        }
         if (!team.getExpiretime().after(DateUtil.yesterday())) {
             throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "过期时间不合法");
         }
@@ -80,7 +80,8 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam>
         }
         //加密
         if (team.getTIsPublic().equals(TeamStatusEnum.ENCRYPT.getCode())
-                && !SecureUtil.md5(userTeamAddDto.getPassword()).equals(team.getTPassword())) {
+                && !SecureUtil.md5(userTeamAddDto.getPassword()).equals(team.getTPassword())
+                && teamUsersCount != 0) {
             throw new BusinessException(ErrorStatus.BUSINESS_ERROR, "队伍密码错误");
         }
         //加入队伍判重

@@ -48,9 +48,9 @@ public class TeamQuery extends PageDto implements Serializable {
      */
     private Long captainId;
 
-    /**
-     * 是否公开，0公开，1私密
-     */
-    private Integer isPublic;
+//    /**
+//     * 是否公开，0公开，1私密
+//     */
+//    private Integer isPublic;
 
 }

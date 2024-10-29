@@ -44,7 +44,7 @@ public class TeamVo implements Serializable {
     /**
      * 过期时间
      */
-    private Date expireTime;
+    private String expireTime;
 
     /**
      * 队伍队长用户id
